@@ -372,7 +372,7 @@ def _build_human_readable(profile: dict, country_name: str) -> str:
             lines.append(f"  • {occ['title']}")
         lines.append("")
 
-    top_skills = [s for s in skills if s.get("level") in ("advanced", "intermediate")][:6]
+    top_skills = [s for s in skills if s.get("level") in ("advanced", "intermediate") and s.get("uri")][:6]
     if top_skills:
         lines.append("Your strongest skills:")
         for s in top_skills:
