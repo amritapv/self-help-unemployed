@@ -16,7 +16,28 @@ and region aware.
 
 from __future__ import annotations
 
+import json
+import os
+import re
+import sys
 from typing import Any
+
+import anthropic
+
+_TRANSLATION_MODEL = "claude-sonnet-4-20250514"
+
+_LANGUAGE_NAMES = {
+    "en": "English",
+    "hi": "Hindi",
+    "es": "Spanish",
+    "ar": "Arabic",
+    "fr": "French",
+}
+
+
+def _language_name(code: str) -> str:
+    """Map a language code to its English name. Falls back to English silently."""
+    return _LANGUAGE_NAMES.get((code or "en").lower(), "English")
 
 # What machines are getting better at vs what still needs a human, per ISCO.
 # Hand-curated. Lists are short on purpose — the chat surfaces them as bullets.
@@ -250,6 +271,7 @@ def assess_automation_risk(
     country_config: dict[str, Any],
     frey_osborne: dict[str, Any],
     region: str | None = None,
+    language: str = "en",
 ) -> dict[str, Any]:
     """Return automation risk struct keyed off the profile's primary matched ISCO.
 
@@ -280,7 +302,10 @@ def assess_automation_risk(
     loc = country_config.get("localization", {})
 
     if not occupations:
-        return _empty_unknown_response("we couldn't identify a primary occupation from your background")
+        return _maybe_translate(
+            _empty_unknown_response("we couldn't identify a primary occupation from your background"),
+            language,
+        )
 
     primary = occupations[0]
     isco_code = str(primary.get("isco_code", "")).strip()
@@ -305,9 +330,12 @@ def assess_automation_risk(
             fallback_used = fallback_isco
 
     if not fo_entry:
-        return _empty_unknown_response(
-            f"we don't yet have automation-risk data for {occupation_title} (ISCO {isco_code}) in {country_name}",
-            adjacent=loc.get("growth_pivots", []),
+        return _maybe_translate(
+            _empty_unknown_response(
+                f"we don't yet have automation-risk data for {occupation_title} (ISCO {isco_code}) in {country_name}",
+                adjacent=loc.get("growth_pivots", []),
+            ),
+            language,
         )
 
     raw = float(fo_entry.get("raw_probability", 0.0))
@@ -332,7 +360,7 @@ def assess_automation_risk(
             f"is anchored on the closest occupation we have, ISCO {fallback_used}.)"
         )
 
-    return {
+    result = {
         "verdict": bucket,
         "verdict_label": label,
         "calibrated_score": calibrated,
@@ -349,6 +377,7 @@ def assess_automation_risk(
         "durable_skills": hints["still_needs_you"],
         "adjacent_skills_for_resilience": worth_learning,
     }
+    return _maybe_translate(result, language)
 
 
 def _empty_unknown_response(reason: str, adjacent: list[dict[str, Any]] | None = None) -> dict[str, Any]:
@@ -371,3 +400,130 @@ def _empty_unknown_response(reason: str, adjacent: list[dict[str, Any]] | None =
         "durable_skills": [],
         "adjacent_skills_for_resilience": adj_skills,
     }
+
+
+# ── Translation pass ──────────────────────────────────────────────────────────
+
+# Prose fields on the risk struct that are user-facing and must be translated.
+_TRANSLATE_STRING_FIELDS = (
+    "summary_line",
+    "plain_language_summary",
+    "verdict_label",
+    "context_anchor",
+)
+_TRANSLATE_LIST_FIELDS = (
+    "machines_handling",
+    "still_needs_you",
+    "worth_learning",
+)
+
+
+def _strip_fences(text: str) -> str:
+    text = text.strip()
+    text = re.sub(r"^```[a-z]*\s*", "", text)
+    text = re.sub(r"\s*```$", "", text)
+    return text
+
+
+def _maybe_translate(result: dict[str, Any], language: str) -> dict[str, Any]:
+    """If language != 'en', call Sonnet to translate the prose fields.
+
+    Translates: summary_line, plain_language_summary, verdict_label, context_anchor,
+    machines_handling[], still_needs_you[], worth_learning[].
+
+    Does NOT translate: numeric fields (calibrated_score, horizon_years), enum/tag
+    fields (verdict, overall_risk). Legacy duplicate fields (at_risk_tasks,
+    durable_skills, adjacent_skills_for_resilience) are kept in sync with their
+    translated source lists.
+
+    On failure: logs to stderr and returns the English version with
+    `_translation_failed: true` added.
+    """
+    code = (language or "en").lower()
+    if code == "en" or code not in _LANGUAGE_NAMES:
+        return result
+
+    target_name = _language_name(code)
+
+    # Build a payload of just the strings we need translated, keyed for round-trip.
+    payload: dict[str, Any] = {}
+    for f in _TRANSLATE_STRING_FIELDS:
+        v = result.get(f)
+        if isinstance(v, str) and v.strip():
+            payload[f] = v
+    for f in _TRANSLATE_LIST_FIELDS:
+        v = result.get(f)
+        if isinstance(v, list) and v:
+            payload[f] = v
+
+    if not payload:
+        return result
+
+    instruction = (
+        f"Translate the following short labels and paragraph from English into {target_name}. "
+        "Keep the meaning intact. Preserve any proper nouns (NVTI, PMKVY, ISCO codes, "
+        "country names like Ghana, India). For Arabic, output in Arabic script with proper "
+        "RTL-friendly punctuation. For Hindi, use Devanagari. Keep numbers and percentages "
+        "in Western digits. Return ONLY a JSON object with the same keys and same list "
+        "lengths/orderings as the input — no prose, no markdown fences. Each string field "
+        "should map to a translated string; each list field should map to a list of "
+        "translated strings of identical length."
+    )
+
+    user_message = (
+        f"{instruction}\n\nINPUT JSON:\n{json.dumps(payload, ensure_ascii=False, indent=2)}"
+    )
+
+    try:
+        if not os.environ.get("ANTHROPIC_API_KEY"):
+            raise RuntimeError("ANTHROPIC_API_KEY not set")
+
+        client = anthropic.Anthropic()
+        response = client.messages.create(
+            model=_TRANSLATION_MODEL,
+            max_tokens=1500,
+            system=(
+                "You are a precise translator. You return ONLY a JSON object matching the "
+                "shape of the input — no prose, no markdown fences, no commentary."
+            ),
+            messages=[{"role": "user", "content": user_message}],
+        )
+        text_block = next((b.text for b in response.content if b.type == "text"), "")
+        raw = _strip_fences(text_block)
+        translated = json.loads(raw)
+        if not isinstance(translated, dict):
+            raise ValueError("translation response was not a JSON object")
+
+        out = dict(result)
+        for f in _TRANSLATE_STRING_FIELDS:
+            if f in payload and isinstance(translated.get(f), str):
+                out[f] = translated[f]
+        for f in _TRANSLATE_LIST_FIELDS:
+            if f in payload and isinstance(translated.get(f), list):
+                src_list = payload[f]
+                new_list = translated[f]
+                # Keep original length; if mismatched, pad/truncate to be safe.
+                if len(new_list) != len(src_list):
+                    if len(new_list) < len(src_list):
+                        new_list = list(new_list) + src_list[len(new_list):]
+                    else:
+                        new_list = new_list[:len(src_list)]
+                out[f] = [str(x) for x in new_list]
+
+        # Keep legacy duplicate fields in sync with translated sources.
+        if "machines_handling" in payload:
+            out["at_risk_tasks"] = list(out["machines_handling"])
+        if "still_needs_you" in payload:
+            out["durable_skills"] = list(out["still_needs_you"])
+        if "worth_learning" in payload:
+            out["adjacent_skills_for_resilience"] = list(out["worth_learning"])
+
+        return out
+    except Exception as exc:  # noqa: BLE001
+        print(
+            f"[risk_engine] translation pass to {target_name} failed: {exc!r}",
+            file=sys.stderr,
+        )
+        out = dict(result)
+        out["_translation_failed"] = True
+        return out

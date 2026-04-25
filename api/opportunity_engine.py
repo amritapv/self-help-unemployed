@@ -30,6 +30,19 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
 MODEL = "claude-sonnet-4-20250514"
 
+_LANGUAGE_NAMES = {
+    "en": "English",
+    "hi": "Hindi",
+    "es": "Spanish",
+    "ar": "Arabic",
+    "fr": "French",
+}
+
+
+def _language_name(code: str) -> str:
+    """Map a language code to its English name. Falls back to English silently."""
+    return _LANGUAGE_NAMES.get((code or "en").lower(), "English")
+
 ISCO_TITLES: dict[str, str] = {
     "2512": "Software Developers",
     "2519": "Software and Applications Developers (general)",
@@ -168,6 +181,7 @@ def _build_prompt(
     country_config: dict[str, Any],
     candidates: list[dict[str, Any]],
     region: str | None,
+    language: str = "en",
 ) -> tuple[str, str]:
     cur = country_config["currency"]
     sector_lines = [
@@ -218,7 +232,14 @@ Return JSON with this exact shape — nothing else, no markdown fences:
     }}
   ],
   "note": "Optional explanation if you returned <3 opportunities or no opportunities"
-}}"""
+}}
+
+# LANGUAGE
+Respond in {_language_name(language)}. Specifically:
+- title, employer_or_path, wage_range, sector_growth, fit_explanation, skill_gap, next_step, note: write in {_language_name(language)}.
+- opportunity_type: keep as one of the English enum values exactly: formal_employment | self_employment | gig | apprenticeship | training_pathway.
+- isco_code values, training_pathway IDs (e.g., nvti_solar_2wk), and currency codes (e.g., GHS, INR) referenced inline: keep verbatim — they are identifiers.
+- Numeric values cited from the candidates list (wages, growth percentages): keep verbatim."""
 
     summary = skills_profile.get("portable_summary", "")
     occupations_text = "\n".join(
@@ -270,6 +291,7 @@ def match_opportunities(
     country_config: dict[str, Any],
     frey_osborne: dict[str, Any],
     region: str | None = None,
+    language: str = "en",
 ) -> dict[str, Any]:
     """Run Stage A filter + Stage B Sonnet ranking.
 
@@ -288,7 +310,7 @@ def match_opportunities(
             "candidates_considered": 0,
         }
 
-    system, user = _build_prompt(skills_profile, country_config, candidates, region)
+    system, user = _build_prompt(skills_profile, country_config, candidates, region, language)
 
     if not os.environ.get("ANTHROPIC_API_KEY"):
         raise RuntimeError("ANTHROPIC_API_KEY not set. Copy .env.example to .env and fill it in.")

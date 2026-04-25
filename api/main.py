@@ -39,6 +39,20 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 # Pydantic Models
 # ============================================================================
 
+LANGUAGE_NAMES = {
+    "en": "English",
+    "hi": "Hindi",
+    "es": "Spanish",
+    "ar": "Arabic",
+    "fr": "French",
+}
+
+
+def _language_name(code: str) -> str:
+    """Map a language code to its English name. Falls back to English silently."""
+    return LANGUAGE_NAMES.get((code or "en").lower(), "English")
+
+
 class SkillsAssessmentRequest(BaseModel):
     """Input for skills assessment - user's self-description"""
     education: str # no specific format, processed text from chat conversation
@@ -46,6 +60,7 @@ class SkillsAssessmentRequest(BaseModel):
     skills_self_reported: str
     additional_info: str
     country_code: str = "GH"  # Default to Ghana
+    language: str = "en"
 
 
 class MatchedOccupation(BaseModel):
@@ -98,6 +113,7 @@ class OpportunityMatchRequest(BaseModel):
     skills_profile: dict
     country_code: str = "GH"
     region: Optional[str] = None
+    language: str = "en"
 
 
 class Opportunity(BaseModel):
@@ -134,6 +150,7 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     messages: list[ChatMessage]
     country_code: str = "GH"
+    language: str = "en"
 
 
 class ChatResponse(BaseModel):
@@ -149,6 +166,8 @@ class ChatResponse(BaseModel):
 claude_client = anthropic.Anthropic()
 
 CHAT_SYSTEM_PROMPT = """You are a skills assessment assistant for UNMAPPED in {country}.
+
+Respond in {language_name}. The user is using a {language_name}-speaking version of UNMAPPED.
 
 Gather info about: EDUCATION, EXPERIENCE, SKILLS, and LANGUAGES/OTHER.
 
@@ -247,7 +266,10 @@ async def chat_endpoint(request: ChatRequest):
     response = claude_client.messages.create(
         model="claude-sonnet-4-20250514",
         max_tokens=500,
-        system=CHAT_SYSTEM_PROMPT.format(country=country_config.get("country_name", "Ghana")),
+        system=CHAT_SYSTEM_PROMPT.format(
+            country=country_config.get("country_name", "Ghana"),
+            language_name=_language_name(request.language),
+        ),
         messages=claude_messages
     )
 
@@ -301,6 +323,7 @@ async def assess_skills_endpoint(request: SkillsAssessmentRequest):
         additional_information=request.additional_info,
         country_code=request.country_code,
         countries_config=countries_config,
+        language=request.language,
     )
 
     return result
@@ -324,7 +347,8 @@ async def match_opportunities_endpoint(request: OpportunityMatchRequest):
         skills_profile=request.skills_profile,
         country_config=country_config,
         frey_osborne=frey_osborne,
-        region=request.region
+        region=request.region,
+        language=request.language,
     )
 
     return {
