@@ -93,6 +93,8 @@ class SkillsProfile(BaseModel):
 
 class OpportunityMatchRequest(BaseModel):
     """Input for opportunity matching"""
+    # skills_profile is the raw dict returned by /assess-skills — do not enforce
+    # the legacy SkillsProfile schema here, the engine output doesn't match it.
     skills_profile: dict
     country_code: str = "GH"
     region: Optional[str] = None
@@ -317,6 +319,7 @@ async def match_opportunities_endpoint(request: OpportunityMatchRequest):
     country_config = load_country_config(request.country_code)
     frey_osborne = load_frey_osborne()
 
+    # skills_profile is already a dict (loosened the request schema above).
     result = match_opportunities(
         skills_profile=request.skills_profile,
         country_config=country_config,

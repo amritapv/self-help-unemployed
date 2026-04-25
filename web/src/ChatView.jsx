@@ -53,21 +53,55 @@ function ChatView({ country, onProfileComplete }) {
     setLoading(true)
     setMessages(prev => [...prev, {
       role: 'assistant',
-      content: 'Analyzing your skills profile...'
+      content: 'Analyzing your skills and finding opportunities...'
     }])
 
     try {
-      const response = await fetch(`${API_URL}/assess-skills`, {
+      // 1. Skills assessment (Module 01)
+      const profileRes = await fetch(`${API_URL}/assess-skills`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...collectedData, country_code: country })
+      })
+      const profile = await profileRes.json()
+
+      // 2. Opportunity matching (Module 03) — chained immediately
+      const oppsRes = await fetch(`${API_URL}/match-opportunities`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...collectedData,
+          skills_profile: profile,
           country_code: country
         })
       })
+      const oppsData = await oppsRes.json()
+      const opportunities = oppsData.opportunities || []
 
-      const profile = await response.json()
-      onProfileComplete(profile)
+      // 3. Format top 5 as a chat message
+      const summary = profile.portable_summary || ''
+      const intro = summary
+        ? `Based on what you told me:\n\n${summary}\n\nHere are your top ${opportunities.length} opportunities:`
+        : `Here are your top ${opportunities.length} opportunities:`
+
+      const oppLines = opportunities.slice(0, 5).map((opp, i) => {
+        const lines = [
+          `\n${i + 1}. ${opp.title}`,
+          `   Why it fits: ${opp.fit_explanation}`,
+          `   Wage: ${opp.wage_range}`,
+          `   Outlook: ${opp.sector_growth || opp.sector_growth_signal}`,
+        ]
+        if (opp.skill_gap) lines.push(`   Gap: ${opp.skill_gap}`)
+        lines.push(`   Next step: ${opp.next_step}`)
+        return lines.join('\n')
+      }).join('\n')
+
+      const finalMessage = oppLines
+        ? `${intro}\n${oppLines}`
+        : `I couldn't find a good match — ${oppsData.note || 'try giving me a bit more detail about your skills.'}`
+
+      setMessages(prev => [...prev, { role: 'assistant', content: finalMessage }])
+      // Surface profile/opportunities upstream too in case App.jsx needs them
+      onProfileComplete?.({ profile, opportunities, country })
     } catch (error) {
       console.error('Assessment error:', error)
       setMessages(prev => [...prev, {

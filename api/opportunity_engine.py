@@ -71,15 +71,23 @@ def _build_candidates(
     wage_data = country_config.get("wage_data", {})
     sectors = country_config.get("sectors", {})
 
+    # Build candidates for every wage_data ISCO, tagging by relationship to M01.
+    # Sonnet picks the top 5 from the scored pool — broad laterals are kept so
+    # we can always honour "top 5" even when M01 surfaces only one occupation.
     candidates: list[dict[str, Any]] = []
     for isco, wage in wage_data.items():
         if isco.startswith("_"):
             continue
 
         is_module01_match = isco in matched_codes
-        is_lateral = _major_group(isco) in matched_majors and not is_module01_match
-        if not (is_module01_match or is_lateral):
-            continue
+        is_same_major = _major_group(isco) in matched_majors and not is_module01_match
+        # source tag: "m01_match" | "same_major_lateral" | "broad_lateral"
+        if is_module01_match:
+            source = "m01_match"
+        elif is_same_major:
+            source = "same_major_lateral"
+        else:
+            source = "broad_lateral"
 
         fo = frey_osborne.get(isco, {})
         raw = float(fo.get("raw_probability", 0.0))
@@ -107,6 +115,8 @@ def _build_candidates(
             "calibrated_risk": calibrated,
             "task_breakdown": fo.get("task_breakdown", {}),
             "is_module01_match": is_module01_match,
+            "is_same_major_lateral": is_same_major,
+            "source": source,
             "module01_confidence": confidence,
             "training_pathways": [
                 tp for tp in country_config.get("training_pathways", [])
@@ -114,9 +124,12 @@ def _build_candidates(
             ],
         })
 
+    # Score: prioritise M01 matches, then same-major laterals, then broad
+    # laterals. Within each tier, prefer low automation risk + high sector growth.
+    source_priority = {"m01_match": 2, "same_major_lateral": 1, "broad_lateral": 0}
     candidates.sort(
         key=lambda c: (
-            c["is_module01_match"],
+            source_priority[c["source"]],
             -c["calibrated_risk"],
             c.get("sector_growth_pct") or 0.0,
         ),
@@ -132,9 +145,14 @@ def _format_candidate(c: dict[str, Any]) -> str:
     ) or "none configured"
     sector_growth = f"{(c['sector_growth_pct'] or 0)*100:.1f}%/yr" if c.get("sector_growth_pct") is not None else "n/a"
     tb = c.get("task_breakdown") or {}
+    source_label = {
+        "m01_match": "Module 01 match (the user's primary occupation)",
+        "same_major_lateral": "lateral pivot, same ISCO major group",
+        "broad_lateral": "broad lateral — different field, surfaced as a stretch option",
+    }[c["source"]]
     return (
         f"--- ISCO {c['isco_code']}: {c['title']} ---\n"
-        f"- Source: {'Module 01 match' if c['is_module01_match'] else 'lateral pivot (same major group)'}\n"
+        f"- Source: {source_label}\n"
         f"- Sector: {c.get('sector','n/a')} (growth {sector_growth}, informal share {(c.get('informality_share') or 0)*100:.0f}%)\n"
         f"- Wage band ({c['currency_code']}/mo): min {c['wage_min']}, max {c['wage_max']}, median {c['wage_median']}\n"
         f"- Calibrated automation risk: {c['calibrated_risk']:.2f} (raw F-O {c['raw_risk']:.2f} × country factor)\n"
@@ -177,7 +195,7 @@ def _build_prompt(
 
 # How you work
 1. Rank candidates by realistic fit (skill alignment + automation resilience + reachability).
-2. Pick 3-5 opportunities. Order best first.
+2. Pick exactly the TOP 5 opportunities. Order best first. Always return 5 unless the candidate pool is smaller, in which case return them all.
 3. CITE numbers verbatim from the candidates list — don't invent wages, growth rates, or pathways.
 4. Use ONLY ISCO codes from the candidates list. Use ONLY training_pathway IDs from the country pathways.
 5. Plain language. Wrap numbers in meaning ("Construction has grown 7% per year recently") — never raw jargon.
@@ -192,9 +210,9 @@ Return JSON with this exact shape — nothing else, no markdown fences:
       "title": "Plain-language role title (e.g., 'Mobile Device Technician')",
       "opportunity_type": "formal_employment | self_employment | gig | apprenticeship | training_pathway",
       "employer_or_path": "An employer name OR the path (e.g., 'Self-employment in your neighbourhood')",
-      "sector_growth_signal": "Plain-language sentence with the sector growth number cited verbatim",
-      "wage_range": "Plain-language wage band, e.g., 'Expected earnings: GHS 1,800 – 2,400 per month'",
-      "fit_explanation": "1-2 sentences citing the user's actual skills",
+      "wage_range": "Wage as a range with the floor (minimum) on the low end and the high end clearly framed. Cite the candidate's wage_min and wage_max verbatim. Format: '<currency> <floor> (starting) – <high> (high end) /month'. Example: 'GHS 1,800 (starting) – 2,400 (high end) /month'. Always show both ends.",
+      "sector_growth": "Friendly, non-technical description of how this job's sector is growing — for someone with no business or economics vocabulary. NO jargon (avoid words like 'ICT', 'CAGR', 'sector growth rate'). Translate sector slugs to everyday words: 'ict' -> 'tech and digital jobs', 'renewable_energy' -> 'solar and renewable energy', 'services' -> 'services and repair work', 'manufacturing' -> 'factory and manufacturing work', 'agriculture' -> 'farming', 'construction' -> 'building and construction', 'retail' -> 'shops and selling', 'finance' -> 'banking', 'healthcare' -> 'health and care work', 'education' -> 'teaching'. Cite the candidate's sector_growth_pct number verbatim. Example: 'Tech and digital jobs are growing fast — about 14% more work each year.' or 'Mobile repair and services have steady demand, with about 6% more work each year.'",
+      "fit_explanation": "ONE short sentence (15-25 words) explaining why this is a good fit, citing the user's actual skills. Punchy and clear — no jargon.",
       "skill_gap": "What the user is missing (or null if no gap)",
       "next_step": "One concrete action — e.g., 'Register at NVTI for the next intake' (must reference a pathway ID if applicable)"
     }}
@@ -235,7 +253,7 @@ Region of interest: {region or 'any region'}
 
 {candidates_text}
 
-Return JSON per the schema. Pick 3-5 best matches in fit-order. If nothing fits well, return empty opportunities and put the reason in `note`."""
+Return JSON per the schema. Pick the TOP 5 best matches in fit-order. If the candidate pool is smaller than 5, return them all. If nothing fits well, return empty opportunities and put the reason in `note`."""
 
     return system, user
 
