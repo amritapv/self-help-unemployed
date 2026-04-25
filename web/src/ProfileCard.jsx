@@ -31,7 +31,7 @@ function ProfileCard({ profile }) {
         <div className="flex flex-wrap gap-2">
           {profile.skills?.map((skill, i) => (
             <span key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-              {skill.skill_name} [{skill.level}]
+              {skill.skill_name}
             </span>
           ))}
         </div>
