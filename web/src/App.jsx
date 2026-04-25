@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import ChatView from './ChatView'
 import ProfileCard from './ProfileCard'
-import RiskDisplay from './RiskDisplay'
 import OpportunityList from './OpportunityList'
 
 function App() {
@@ -29,12 +28,17 @@ function App() {
         ) : !opportunities ? (
           <>
             <ProfileCard profile={skillsProfile} />
-            <RiskDisplay risk={skillsProfile.automation_risk} />
             <button
               onClick={() => {/* TODO: fetch opportunities */}}
               className="w-full mt-4 bg-blue-600 text-white p-3 rounded"
             >
               Find Opportunities
+            </button>
+            <button
+              onClick={() => setSkillsProfile(null)}
+              className="w-full mt-2 border border-gray-300 text-gray-600 p-3 rounded"
+            >
+              Start Over
             </button>
           </>
         ) : (
