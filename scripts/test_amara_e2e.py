@@ -84,22 +84,30 @@ def _print_profile(profile: dict) -> None:
 
 
 def _print_risk(risk: dict) -> None:
-    print(f"Overall risk:   {risk['overall_risk']} (calibrated {risk['calibrated_score']:.2f})")
+    verdict = risk.get("verdict", risk.get("overall_risk", "unknown"))
+    label = risk.get("verdict_label", verdict)
+    horizon = risk.get("horizon_years", 0)
+    print(f"Verdict:        {verdict.upper()} ({label})  |  horizon: {horizon} years  |  calibrated_score: {risk['calibrated_score']:.2f}")
     print()
     print(risk["plain_language_summary"])
     print()
-    if risk["at_risk_tasks"]:
-        print("At risk:")
-        for t in risk["at_risk_tasks"]:
+    if risk.get("machines_handling"):
+        print("What machines are getting better at:")
+        for t in risk["machines_handling"]:
             print(f"  - {t}")
-    if risk["durable_skills"]:
-        print("Durable:")
-        for t in risk["durable_skills"]:
+        print()
+    if risk.get("still_needs_you"):
+        print("What still needs you:")
+        for t in risk["still_needs_you"]:
             print(f"  - {t}")
-    if risk["adjacent_skills_for_resilience"]:
-        print("Adjacent skills to build:")
-        for t in risk["adjacent_skills_for_resilience"]:
+        print()
+    if risk.get("worth_learning"):
+        print("Worth learning (locally relevant growth pivots):")
+        for t in risk["worth_learning"]:
             print(f"  - {t}")
+        print()
+    if risk.get("context_anchor"):
+        print(f"Local anchor: {risk['context_anchor']}")
 
 
 def _print_opportunities(opps: dict) -> None:
@@ -111,13 +119,13 @@ def _print_opportunities(opps: dict) -> None:
         return
     for i, opp in enumerate(opps["opportunities"], 1):
         print(f"[{i}] {opp['title']}  ({opp['opportunity_type']})")
-        print(f"    Path:           {opp['employer_or_path']}")
-        print(f"    Growth signal:  {opp['sector_growth_signal']}")
-        print(f"    Wage:           {opp['wage_range']}")
-        print(f"    Fit:            {opp['fit_explanation']}")
+        print(f"    Path:    {opp.get('employer_or_path','')}")
+        print(f"    Fit:     {opp.get('fit_explanation','')}")
+        print(f"    Wage:    {opp.get('wage_range','')}")
+        print(f"    Outlook: {opp.get('sector_growth') or opp.get('sector_growth_signal','')}")
         if opp.get("skill_gap"):
-            print(f"    Gap:            {opp['skill_gap']}")
-        print(f"    Next step:      {opp['next_step']}")
+            print(f"    Gap:     {opp['skill_gap']}")
+        print(f"    Next:    {opp.get('next_step','')}")
         print()
     if opps.get("note"):
         print(f"Note: {opps['note']}")
@@ -163,7 +171,9 @@ def main() -> None:
             "portable_summary": "You have hands-on technical skills in phone repair plus self-taught programming.",
         }
         _hr("Module 02: automation risk")
-        risk = risk_engine.assess_automation_risk(canned_profile, country_config, frey_osborne)
+        risk = risk_engine.assess_automation_risk(
+            canned_profile, country_config, frey_osborne, region=persona.get("region")
+        )
         _print_risk(risk)
 
         _hr("Module 03: candidate filter (no Sonnet call)")
@@ -188,7 +198,9 @@ def main() -> None:
     _print_profile(profile)
 
     _hr("Module 02: automation risk (deterministic + template)")
-    risk = risk_engine.assess_automation_risk(profile, country_config, frey_osborne)
+    risk = risk_engine.assess_automation_risk(
+        profile, country_config, frey_osborne, region=persona.get("region")
+    )
     _print_risk(risk)
 
     _hr("Module 03: opportunity matching (Sonnet call)")
