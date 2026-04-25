@@ -326,7 +326,7 @@ CANDIDATE ESCO ENTRIES (only use URIs from this list):
 {candidates_text}"""
 
     response = client.messages.create(
-        model="claude-sonnet-4-5",
+        model="claude-sonnet-4-20250514",
         max_tokens=2048,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
@@ -366,6 +366,19 @@ def _build_human_readable(profile: dict, country_name: str) -> str:
     if summary:
         lines += [summary, ""]
 
+    if occupations:
+        lines.append("Your experience matches these recognised roles:")
+        for occ in occupations[:3]:
+            lines.append(f"  • {occ['title']}")
+        lines.append("")
+
+    top_skills = [s for s in skills if s.get("level") in ("advanced", "intermediate")][:6]
+    if top_skills:
+        lines.append("Your strongest skills:")
+        for s in top_skills:
+            lines.append(f"  • {s['skill_name']}  [{s['level']}]")
+        lines.append("")
+
     if education:
         cred  = education.get("local_credential", "")
         desc  = education.get("description", "")
@@ -377,16 +390,6 @@ def _build_human_readable(profile: dict, country_name: str) -> str:
             f"{lg['language']} ({lg['proficiency']})" for lg in languages
         )
         lines.append(f"Your languages: {lang_str}")
-
-    if education or languages:
-        lines.append("")
-
-    top_skills = [s for s in skills if s.get("level") in ("advanced", "intermediate") and s.get("uri")][:6]
-    if top_skills:
-        lines.append("Your strongest skills:")
-        for s in top_skills:
-            lines.append(f"  • {s['skill_name']}  [{s['level']}]")
-        lines.append("")
 
     lines += [
         "",
