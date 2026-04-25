@@ -210,8 +210,8 @@ Return JSON with this exact shape — nothing else, no markdown fences:
       "title": "Plain-language role title (e.g., 'Mobile Device Technician')",
       "opportunity_type": "formal_employment | self_employment | gig | apprenticeship | training_pathway",
       "employer_or_path": "An employer name OR the path (e.g., 'Self-employment in your neighbourhood')",
-      "sector_growth_signal": "Plain-language sentence with the sector growth number cited verbatim",
-      "wage_range": "Plain-language wage band, e.g., 'Expected earnings: GHS 1,800 – 2,400 per month'",
+      "wage_range": "Wage as a range with the floor (minimum) on the low end and the high end clearly framed. Cite the candidate's wage_min and wage_max verbatim. Format: '<currency> <floor> (starting) – <high> (high end) /month'. Example: 'GHS 1,800 (starting) – 2,400 (high end) /month'. Always show both ends.",
+      "sector_growth": "Friendly, non-technical description of how this job's sector is growing — for someone with no business or economics vocabulary. NO jargon (avoid words like 'ICT', 'CAGR', 'sector growth rate'). Translate sector slugs to everyday words: 'ict' -> 'tech and digital jobs', 'renewable_energy' -> 'solar and renewable energy', 'services' -> 'services and repair work', 'manufacturing' -> 'factory and manufacturing work', 'agriculture' -> 'farming', 'construction' -> 'building and construction', 'retail' -> 'shops and selling', 'finance' -> 'banking', 'healthcare' -> 'health and care work', 'education' -> 'teaching'. Cite the candidate's sector_growth_pct number verbatim. Example: 'Tech and digital jobs are growing fast — about 14% more work each year.' or 'Mobile repair and services have steady demand, with about 6% more work each year.'",
       "fit_explanation": "ONE short sentence (15-25 words) explaining why this is a good fit, citing the user's actual skills. Punchy and clear — no jargon.",
       "skill_gap": "What the user is missing (or null if no gap)",
       "next_step": "One concrete action — e.g., 'Register at NVTI for the next intake' (must reference a pathway ID if applicable)"

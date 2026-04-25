@@ -87,8 +87,8 @@ function ChatView({ country, onProfileComplete }) {
         const lines = [
           `\n${i + 1}. ${opp.title}`,
           `   Why it fits: ${opp.fit_explanation}`,
-          `   ${opp.sector_growth_signal}`,
-          `   ${opp.wage_range}`,
+          `   Wage: ${opp.wage_range}`,
+          `   Outlook: ${opp.sector_growth || opp.sector_growth_signal}`,
         ]
         if (opp.skill_gap) lines.push(`   Gap: ${opp.skill_gap}`)
         lines.push(`   Next step: ${opp.next_step}`)
