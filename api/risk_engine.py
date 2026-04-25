@@ -149,6 +149,18 @@ def assess_automation_risk(
     factor = country_config.get("automation_calibration", {}).get("infrastructure_factor", 1.0)
     country_name = country_config.get("country_name", "your country")
 
+    fallback_used: str | None = None
+    if not fo_entry and isco_code:
+        # Nearest-neighbour fallback: any ISCO in the same major group (first digit)
+        # produces a usable estimate. Module 01 may surface a 4-digit code we
+        # haven't curated yet (e.g. 7422 mobile repair vs our 7421 electronics).
+        major = isco_code[0]
+        candidates = [k for k, v in frey_osborne.items() if not k.startswith("_") and k.startswith(major)]
+        if candidates:
+            fallback_isco = min(candidates, key=lambda k: abs(int(k) - int(isco_code)))
+            fo_entry = frey_osborne[fallback_isco]
+            fallback_used = fallback_isco
+
     if not fo_entry:
         return {
             "overall_risk": "unknown",
@@ -164,13 +176,20 @@ def assess_automation_risk(
 
     raw = float(fo_entry.get("raw_probability", 0.0))
     calibrated = round(raw * factor, 3)
-    hints = ISCO_TASK_HINTS.get(isco_code, {"at_risk": [], "durable": []})
+    hint_isco = isco_code if isco_code in ISCO_TASK_HINTS else (fallback_used or isco_code)
+    hints = ISCO_TASK_HINTS.get(hint_isco, {"at_risk": [], "durable": []})
+    summary = _phrasing(calibrated, country_name, occupation_title)
+    if fallback_used:
+        summary += (
+            f" (Note: we don't yet have direct data for ISCO {isco_code}, so this estimate "
+            f"is anchored on the closest occupation we have, ISCO {fallback_used}.)"
+        )
 
     return {
         "overall_risk": _level(calibrated),
         "calibrated_score": calibrated,
         "at_risk_tasks": hints["at_risk"],
         "durable_skills": hints["durable"],
-        "adjacent_skills_for_resilience": _adjacent_skills(isco_code),
-        "plain_language_summary": _phrasing(calibrated, country_name, occupation_title),
+        "adjacent_skills_for_resilience": _adjacent_skills(hint_isco),
+        "plain_language_summary": summary,
     }

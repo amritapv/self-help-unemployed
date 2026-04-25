@@ -278,14 +278,21 @@ def match_opportunities(
     client = anthropic.Anthropic()
     response = client.messages.create(
         model=MODEL,
-        max_tokens=3000,
+        max_tokens=8000,
         thinking={"type": "adaptive"},
+        output_config={"effort": "medium"},
         system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
         messages=[{"role": "user", "content": user}],
     )
 
     text_block = next((b.text for b in response.content if b.type == "text"), "")
     raw = _strip_fences(text_block)
+    if not raw:
+        block_types = [b.type for b in response.content]
+        raise ValueError(
+            f"Sonnet returned no text block. stop_reason={response.stop_reason}; blocks={block_types}; "
+            f"usage={response.usage}"
+        )
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError as exc:
