@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 const API_URL = 'http://localhost:8000'
+
+// Web Speech API support check
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
 
 function ChatView({ country, onProfileComplete }) {
   const [messages, setMessages] = useState([
@@ -9,6 +12,50 @@ function ChatView({ country, onProfileComplete }) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [collectedData, setCollectedData] = useState(null)
+  const [isListening, setIsListening] = useState(false)
+  const [speechLang, setSpeechLang] = useState('en-US')
+  const recognitionRef = useRef(null)
+
+  const SPEECH_LANGUAGES = [
+    { label: 'English', code: 'en-US' },
+    { label: 'Hindi', code: 'hi-IN' },
+    { label: 'Telugu', code: 'te-IN' },
+    { label: 'Japanese', code: 'ja-JP' },
+    { label: 'Tagalog', code: 'fil-PH' },
+    { label: 'Spanish', code: 'es-ES' },
+  ]
+
+  useEffect(() => {
+    if (!SpeechRecognition) return
+
+    const recognition = new SpeechRecognition()
+    recognition.continuous = true
+    recognition.interimResults = true
+    recognition.lang = speechLang
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map(r => r[0].transcript)
+        .join('')
+      setInput(transcript)
+    }
+
+    recognition.onend = () => setIsListening(false)
+    recognition.onerror = () => setIsListening(false)
+
+    recognitionRef.current = recognition
+  }, [speechLang])
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) return
+    if (isListening) {
+      recognitionRef.current.stop()
+    } else {
+      setInput('')
+      recognitionRef.current.start()
+      setIsListening(true)
+    }
+  }
 
   const handleSend = async () => {
     if (!input.trim() || loading) return
@@ -115,14 +162,39 @@ function ChatView({ country, onProfileComplete }) {
       )}
 
       <div className="flex gap-2 p-4 border-t">
+        {SpeechRecognition && (
+          <select
+            value={speechLang}
+            onChange={(e) => { setSpeechLang(e.target.value); if (isListening) recognitionRef.current?.stop() }}
+            className="border rounded-lg px-2 text-sm text-gray-600 bg-white"
+          >
+            {SPEECH_LANGUAGES.map(l => (
+              <option key={l.code} value={l.code}>{l.label}</option>
+            ))}
+          </select>
+        )}
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Type your message..."
+          placeholder={isListening ? 'Listening...' : 'Type or speak your message...'}
           disabled={loading}
-          className="flex-1 border rounded-lg p-3 disabled:bg-gray-100"
+          className={`flex-1 border rounded-lg p-3 disabled:bg-gray-100 ${isListening ? 'border-red-400 bg-red-50' : ''}`}
         />
+        {SpeechRecognition && (
+          <button
+            onClick={toggleListening}
+            disabled={loading}
+            title={isListening ? 'Stop listening' : 'Speak your answer'}
+            className={`px-4 rounded-lg transition-colors disabled:opacity-50 ${
+              isListening
+                ? 'bg-red-500 text-white animate-pulse'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            🎤
+          </button>
+        )}
         <button
           onClick={handleSend}
           disabled={loading || !input.trim()}
