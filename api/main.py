@@ -11,10 +11,10 @@ import json
 from pathlib import Path
 import anthropic
 
-from skills_engine import assess_skills
-from risk_engine import assess_automation_risk
-from opportunity_engine import match_opportunities
-from report_engine import generate_report
+from api.skills_engine import assess_skills
+from api.risk_engine import assess_automation_risk
+from api.opportunity_engine import match_opportunities
+from api.report_engine import generate_report
 
 app = FastAPI(
     title="UNMAPPED API",

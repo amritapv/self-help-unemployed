@@ -1,6 +1,5 @@
 .env
 .DS_Store
-<<<<<<< Updated upstream
 
 # Python
 __pycache__/
@@ -16,7 +15,3 @@ dist/
 # IDE
 .idea/
 .vscode/
-=======
-.env
-.DS_Store
->>>>>>> Stashed changes
