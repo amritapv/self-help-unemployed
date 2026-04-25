@@ -276,11 +276,13 @@ def match_opportunities(
         raise RuntimeError("ANTHROPIC_API_KEY not set. Copy .env.example to .env and fill it in.")
 
     client = anthropic.Anthropic()
+    # Note: model is claude-sonnet-4-20250514 (Sonnet 4). It does NOT support
+    # `thinking: adaptive` or `output_config.effort` — those are 4.6+ only.
+    # If the model is bumped to claude-sonnet-4-6 or later, re-add:
+    #   thinking={"type": "adaptive"}, output_config={"effort": "medium"}
     response = client.messages.create(
         model=MODEL,
         max_tokens=8000,
-        thinking={"type": "adaptive"},
-        output_config={"effort": "medium"},
         system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
         messages=[{"role": "user", "content": user}],
     )
