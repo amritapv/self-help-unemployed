@@ -28,7 +28,7 @@ from pathlib import Path
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
-MODEL = "claude-sonnet-4-6"
+MODEL = "claude-sonnet-4-20250514"
 
 ISCO_TITLES: dict[str, str] = {
     "2512": "Software Developers",

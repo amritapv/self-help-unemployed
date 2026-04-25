@@ -326,7 +326,7 @@ CANDIDATE ESCO ENTRIES (only use URIs from this list):
 {candidates_text}"""
 
     response = client.messages.create(
-        model="claude-sonnet-4-5",
+        model="claude-sonnet-4-20250514",
         max_tokens=2048,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],

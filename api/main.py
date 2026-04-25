@@ -291,8 +291,10 @@ async def assess_skills_endpoint(request: SkillsAssessmentRequest):
     - Human-readable summary
     - Automation risk assessment
     """
+    # skills_engine expects countries_config as {country_code: config}
     try:
-        countries_config = load_country_config(request.country_code)
+        country_config = load_country_config(request.country_code)
+        countries_config = {request.country_code: country_config}
     except:
         countries_config = {}
 
@@ -308,7 +310,7 @@ async def assess_skills_endpoint(request: SkillsAssessmentRequest):
     return result
 
 
-@app.post("/match-opportunities", response_model=OpportunityMatchResponse)
+@app.post("/match-opportunities")
 async def match_opportunities_endpoint(request: OpportunityMatchRequest):
     """
     Module 03: Opportunity Matching
@@ -319,21 +321,27 @@ async def match_opportunities_endpoint(request: OpportunityMatchRequest):
     - Skill gaps and next steps
     """
     country_config = load_country_config(request.country_code)
+    frey_osborne = load_frey_osborne()
 
-    opportunities = await match_opportunities(
-        skills_profile=request.skills_profile,
+    # Convert Pydantic model to dict for opportunity_engine
+    skills_profile_dict = request.skills_profile.model_dump()
+
+    result = match_opportunities(
+        skills_profile=skills_profile_dict,
         country_config=country_config,
+        frey_osborne=frey_osborne,
         region=request.region
     )
 
-    return OpportunityMatchResponse(
-        opportunities=opportunities,
-        country=country_config["country_name"],
-        region=request.region
-    )
+    return {
+        "opportunities": result.get("opportunities", []),
+        "country": country_config["country_name"],
+        "region": request.region,
+        "note": result.get("note"),
+    }
 
 
-@app.get("/report", response_model=ReportResponse)
+@app.get("/report")
 async def report_endpoint(
     country: str = "GH",
     region: Optional[str] = None,
@@ -350,13 +358,32 @@ async def report_endpoint(
     """
     country_config = load_country_config(country)
 
-    report = await generate_report(
-        country_config=country_config,
-        region=region,
-        sector=sector
-    )
-
-    return report
+    # TODO: Implement actual aggregation from stored profiles
+    # For now, return placeholder structure
+    return {
+        "report_meta": {
+            "country": country_config.get("country_name", country),
+            "region": region,
+            "sector": sector,
+            "profiles_assessed": 0,
+            "report_date": "2026-04-25"
+        },
+        "skills_distribution": {
+            "top_skills": [],
+            "education_levels": {}
+        },
+        "automation_exposure": {
+            "high_risk": {"pct": 0, "top_occupations": []},
+            "moderate_risk": {"pct": 0, "top_occupations": []},
+            "low_risk": {"pct": 0, "top_occupations": []}
+        },
+        "opportunity_gaps": {
+            "highest_growth_sectors": [],
+            "biggest_skill_gaps": [],
+            "recommended_interventions": []
+        },
+        "econometric_signals": country_config.get("econometric", {})
+    }
 
 
 # ============================================================================
