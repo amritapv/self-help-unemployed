@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from typing import Optional
 import json
 from pathlib import Path
+import anthropic
 
 from skills_engine import assess_skills
 from risk_engine import assess_automation_risk
@@ -123,6 +124,59 @@ class ReportResponse(BaseModel):
     econometric_signals: dict
 
 
+class ChatMessage(BaseModel):
+    role: str  # "user" or "assistant"
+    content: str
+
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage]
+    country_code: str = "GH"
+
+
+class ChatResponse(BaseModel):
+    message: str
+    collected_data: Optional[dict] = None  # Filled when enough info gathered
+    ready_for_assessment: bool = False
+
+
+# ============================================================================
+# Claude Client
+# ============================================================================
+
+claude_client = anthropic.Anthropic()
+
+CHAT_SYSTEM_PROMPT = """You are a friendly skills assessment assistant for UNMAPPED, helping young people in {country} understand their skills and find opportunities.
+
+Your job is to have a natural conversation to learn about the user's:
+1. EDUCATION - formal schooling, certifications, training programs
+2. EXPERIENCE - work history, informal jobs, side hustles, family business
+3. SKILLS - technical abilities, soft skills, languages, self-taught abilities
+4. ADDITIONAL INFO - hobbies, volunteer work, anything unique
+
+GUIDELINES:
+- Be warm, encouraging, and conversational
+- Ask follow-up questions to dig deeper - don't just move to the next topic
+- Validate informal work and self-taught skills as valuable
+- Use simple language appropriate for someone who may not have formal education
+- Keep responses concise (2-3 sentences max)
+
+When you feel you have gathered enough information about ALL FOUR areas, end your message with exactly:
+[READY_FOR_ASSESSMENT]
+
+And include a JSON block with the collected data:
+```json
+{{
+  "education": "summary of their education",
+  "experience": "summary of their work experience",
+  "skills_self_reported": "summary of their skills",
+  "additional_info": "any other relevant info"
+}}
+```
+
+Do NOT include [READY_FOR_ASSESSMENT] until you have meaningfully explored all four areas."""
+
+
 # ============================================================================
 # Helper Functions
 # ============================================================================
@@ -172,6 +226,7 @@ async def root():
         "version": "1.0.0",
         "status": "running",
         "endpoints": {
+            "chat": "POST /chat",
             "assess_skills": "POST /assess-skills",
             "match_opportunities": "POST /match-opportunities",
             "report": "GET /report"
@@ -179,7 +234,54 @@ async def root():
     }
 
 
-@app.post("/assess-skills", response_model=SkillsProfile)
+@app.post("/chat", response_model=ChatResponse)
+async def chat_endpoint(request: ChatRequest):
+    """
+    Interactive chat endpoint powered by Claude.
+    Gathers education, experience, skills, and additional info through conversation.
+    """
+    try:
+        country_config = load_country_config(request.country_code)
+    except:
+        country_config = {"country_name": "Ghana"}
+
+    # Convert messages to Claude format
+    claude_messages = [{"role": m.role, "content": m.content} for m in request.messages]
+
+    response = claude_client.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=500,
+        system=CHAT_SYSTEM_PROMPT.format(country=country_config.get("country_name", "Ghana")),
+        messages=claude_messages
+    )
+
+    assistant_message = response.content[0].text
+
+    # Check if ready for assessment
+    ready = "[READY_FOR_ASSESSMENT]" in assistant_message
+    collected_data = None
+
+    if ready:
+        # Extract JSON from response
+        import re
+        json_match = re.search(r'```json\s*(.*?)\s*```', assistant_message, re.DOTALL)
+        if json_match:
+            try:
+                collected_data = json.loads(json_match.group(1))
+            except:
+                pass
+        # Clean up the message
+        assistant_message = assistant_message.replace("[READY_FOR_ASSESSMENT]", "").strip()
+        assistant_message = re.sub(r'```json\s*.*?\s*```', '', assistant_message, flags=re.DOTALL).strip()
+
+    return ChatResponse(
+        message=assistant_message,
+        collected_data=collected_data,
+        ready_for_assessment=ready
+    )
+
+
+@app.post("/assess-skills")
 async def assess_skills_endpoint(request: SkillsAssessmentRequest):
     """
     Module 01 + 02: Skills Signal Engine + AI Readiness
@@ -189,27 +291,21 @@ async def assess_skills_endpoint(request: SkillsAssessmentRequest):
     - Human-readable summary
     - Automation risk assessment
     """
-    country_config = load_country_config(request.country_code)
-    isco_taxonomy = load_isco_taxonomy()
-    esco_skills = load_esco_skills()
-    frey_osborne = load_frey_osborne()
+    try:
+        countries_config = load_country_config(request.country_code)
+    except:
+        countries_config = {}
 
-    # Module 01: Assess skills
-    profile = await assess_skills(
-        user_input=request.user_input,
-        country_config=country_config,
-        isco_taxonomy=isco_taxonomy,
-        esco_skills=esco_skills
+    result = assess_skills(
+        education=request.education,
+        experience=request.experience,
+        skills=request.skills_self_reported,
+        additional_information=request.additional_info,
+        country_code=request.country_code,
+        countries_config=countries_config,
     )
 
-    # Module 02: Assess automation risk
-    profile.automation_risk = await assess_automation_risk(
-        skills_profile=profile,
-        country_config=country_config,
-        frey_osborne=frey_osborne
-    )
-
-    return profile
+    return result
 
 
 @app.post("/match-opportunities", response_model=OpportunityMatchResponse)
