@@ -1,27 +1,49 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { TEST_PERSONAS, matchTestCommand } from './testPersonas'
+import { t } from './i18n'
 
 const API_URL = 'http://localhost:8000'
 
-function ChatView({ country, onProfileComplete }) {
+// Tiny helper for the {placeholder} templates in the i18n strings.
+function fmt(template, vars) {
+  return template.replace(/\{(\w+)\}/g, (_, k) => (k in vars ? vars[k] : `{${k}}`))
+}
+
+function ChatView({ country, language, onProfileComplete }) {
   const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content:
-        "Hi! I'm here to help you understand your skills and find opportunities. Let's start - what's your educational background? This could be formal schooling, certifications, or any training you've done.\n\n" +
-        "Tip: type 'Test: Amara', 'Test: Bern', or 'Test: Cal' to skip the chat and run a simulated assessment with a pre-built persona."
-    }
+    { role: 'assistant', content: t(language, 'greeting') }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [collectedData, setCollectedData] = useState(null)
+
+  // Reset chat when language changes. First switch (still on default greeting only)
+  // happens silently. Once the user has interacted, we confirm before resetting.
+  const prevLangRef = useRef(language)
+  useEffect(() => {
+    if (prevLangRef.current === language) return
+    const hasInteraction = messages.length > 1
+    if (hasInteraction) {
+      const ok = window.confirm(t(language, 'confirmLanguageSwitch'))
+      if (!ok) {
+        // User declined — nothing to do, but we still update the ref so we don't
+        // re-prompt on every render.
+        prevLangRef.current = language
+        return
+      }
+    }
+    setMessages([{ role: 'assistant', content: t(language, 'greeting') }])
+    setCollectedData(null)
+    prevLangRef.current = language
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language])
 
   // Shared assessment chain: /assess-skills -> /match-opportunities -> render top 5.
   const runAssessment = async ({ collected, country_code }) => {
     setLoading(true)
     setMessages(prev => [
       ...prev,
-      { role: 'assistant', content: 'Analyzing your skills and finding opportunities...' }
+      { role: 'assistant', content: t(language, 'analyzingMessage') }
     ])
 
     try {
@@ -29,7 +51,7 @@ function ChatView({ country, onProfileComplete }) {
       const profileRes = await fetch(`${API_URL}/assess-skills`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...collected, country_code })
+        body: JSON.stringify({ ...collected, country_code, language })
       })
       const profile = await profileRes.json()
 
@@ -37,32 +59,33 @@ function ChatView({ country, onProfileComplete }) {
       const oppsRes = await fetch(`${API_URL}/match-opportunities`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ skills_profile: profile, country_code })
+        body: JSON.stringify({ skills_profile: profile, country_code, language })
       })
       const oppsData = await oppsRes.json()
       const opportunities = oppsData.opportunities || []
 
       // 3. Format top 5 as a chat message
       const summary = profile.portable_summary || ''
+      const n = opportunities.length
       const intro = summary
-        ? `Based on what you told me:\n\n${summary}\n\nHere are your top ${opportunities.length} opportunities:`
-        : `Here are your top ${opportunities.length} opportunities:`
+        ? fmt(t(language, 'basedOnInput'), { summary, n })
+        : fmt(t(language, 'topNOpportunities'), { n })
 
       const oppLines = opportunities.slice(0, 5).map((opp, i) => {
         const lines = [
           `\n${i + 1}. ${opp.title}`,
-          `   Why it fits: ${opp.fit_explanation}`,
-          `   Wage: ${opp.wage_range}`,
-          `   Outlook: ${opp.sector_growth || opp.sector_growth_signal}`,
+          `   ${t(language, 'whyItFits')}: ${opp.fit_explanation}`,
+          `   ${t(language, 'wage')}: ${opp.wage_range}`,
+          `   ${t(language, 'outlook')}: ${opp.sector_growth || opp.sector_growth_signal}`,
         ]
-        if (opp.skill_gap) lines.push(`   Gap: ${opp.skill_gap}`)
-        lines.push(`   Next step: ${opp.next_step}`)
+        if (opp.skill_gap) lines.push(`   ${t(language, 'gap')}: ${opp.skill_gap}`)
+        lines.push(`   ${t(language, 'nextStep')}: ${opp.next_step}`)
         return lines.join('\n')
       }).join('\n')
 
       const finalMessage = oppLines
         ? `${intro}\n${oppLines}`
-        : `I couldn't find a good match — ${oppsData.note || 'try giving me a bit more detail about your skills.'}`
+        : (oppsData.note ? `${oppsData.note}` : t(language, 'noMatchFallback'))
 
       setMessages(prev => [...prev, { role: 'assistant', content: finalMessage }])
       onProfileComplete?.({ profile, opportunities, country: country_code })
@@ -70,7 +93,7 @@ function ChatView({ country, onProfileComplete }) {
       console.error('Assessment error:', error)
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: "Sorry, I couldn't complete the assessment. Please try again."
+        content: t(language, 'assessmentError')
       }])
     } finally {
       setLoading(false)
@@ -87,7 +110,7 @@ function ChatView({ country, onProfileComplete }) {
       setMessages(prev => [
         ...prev,
         userMessage,
-        { role: 'assistant', content: `Loading test persona: ${persona.label}` },
+        { role: 'assistant', content: fmt(t(language, 'loadingPersona'), { label: persona.label }) },
       ])
       setInput('')
       const { country_code, ...collected } = persona.payload
@@ -107,7 +130,8 @@ function ChatView({ country, onProfileComplete }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: newMessages,
-          country_code: country
+          country_code: country,
+          language
         })
       })
 
@@ -122,7 +146,7 @@ function ChatView({ country, onProfileComplete }) {
       console.error('Chat error:', error)
       setMessages([...newMessages, {
         role: 'assistant',
-        content: "Sorry, I'm having trouble connecting. Please try again."
+        content: t(language, 'connectionError')
       }])
     } finally {
       setLoading(false)
@@ -142,7 +166,7 @@ function ChatView({ country, onProfileComplete }) {
             key={i}
             className={`p-3 rounded-lg max-w-[85%] whitespace-pre-wrap ${
               msg.role === 'user'
-                ? 'bg-blue-600 text-white ml-auto'
+                ? 'bg-blue-600 text-white ms-auto'
                 : 'bg-gray-200 text-gray-800'
             }`}
           >
@@ -151,20 +175,20 @@ function ChatView({ country, onProfileComplete }) {
         ))}
         {loading && (
           <div className="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-[85%]">
-            <span className="animate-pulse">Thinking...</span>
+            <span className="animate-pulse">...</span>
           </div>
         )}
       </div>
 
       {collectedData && (
         <div className="mx-4 mb-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-sm text-green-800 mb-2">Ready to analyze your skills!</p>
+          <p className="text-sm text-green-800 mb-2">{t(language, 'readyToAnalyze')}</p>
           <button
             onClick={handleAssess}
             disabled={loading}
             className="w-full bg-green-600 text-white p-2 rounded font-semibold disabled:opacity-50"
           >
-            Generate My Skills Profile
+            {t(language, 'generateProfileButton')}
           </button>
         </div>
       )}
@@ -174,7 +198,7 @@ function ChatView({ country, onProfileComplete }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Type your message... or 'Test: Amara' / 'Test: Bern' / 'Test: Cal'"
+          placeholder={t(language, 'inputPlaceholder')}
           disabled={loading}
           className="flex-1 border rounded-lg p-3 disabled:bg-gray-100"
         />
@@ -183,7 +207,7 @@ function ChatView({ country, onProfileComplete }) {
           disabled={loading || !input.trim()}
           className="bg-blue-600 text-white px-6 rounded-lg disabled:opacity-50"
         >
-          Send
+          {t(language, 'sendButton')}
         </button>
       </div>
     </div>
