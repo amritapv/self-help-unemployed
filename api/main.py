@@ -409,5 +409,7 @@ async def report_endpoint(
 # ============================================================================
 
 if __name__ == "__main__":
+    # Run from the repo root with: python -m uvicorn api.main:app --reload
+    # The string form below also allows `python -m api.main` to work.
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("api.main:app", host="0.0.0.0", port=8000)
