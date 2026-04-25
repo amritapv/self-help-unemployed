@@ -1,0 +1,218 @@
+{
+  "_meta": {
+    "schema_version": "0.1.0",
+    "description": "Automation displacement probabilities by ISCO-08 4-digit code. Raw scores from Frey & Osborne (2013) mapped from US SOC codes via the standard SOC-to-ISCO crosswalk.",
+    "source": "Frey, C. B. & Osborne, M. A. (2013). The Future of Employment: How susceptible are jobs to computerisation? Oxford Martin School working paper.",
+    "method_note": "Original Frey-Osborne scores are SOC-coded. To map onto ISCO we use the SOC-to-ISCO correspondence table; where multiple SOC codes map to one ISCO unit group we take the mean. See soc_crosswalk in isco08_taxonomy.json for the source SOC codes per ISCO entry.",
+    "calibration_note": "raw_probability is the global F-O score. Production code MUST multiply by countries.<CC>.automation_calibration.infrastructure_factor before reporting. calibrated_score = raw_probability * infrastructure_factor",
+    "last_updated": "2026-04-25",
+    "linkage": {
+      "key": "ISCO-08 4-digit code (matches isco08_taxonomy.json keys exactly)",
+      "consumed_by": "risk_engine.py (Module 02)",
+      "calibrated_by": "countries.json -> automation_calibration.infrastructure_factor"
+    },
+    "honesty_note": "Frey-Osborne is a 2013 estimate calibrated on US labour markets. It systematically overstates risk in LMICs (hence the country-specific infrastructure_factor) and underweights post-2020 generative AI exposure for cognitive occupations. Treat as a directional signal, not a forecast.",
+    "anchoring_note": "11 of 14 ISCO entries are raw-anchored: raw_probability is the mean of F-O 2013 probabilities across all SOC-2010 codes that crosswalk to that ISCO (per data/raw/crosswalk/soc-2018-to-isco-08.csv). 3 ISCOs (2519, 3512, 9211) have no F-O coverage for their crosswalked SOCs and remain composite - flagged with confidence:'composite' and a note."
+  },
+  "2512": {
+    "raw_probability": 0.086,
+    "confidence": "high",
+    "source_soc": [
+      "15-1132",
+      "15-1133"
+    ],
+    "task_breakdown": {
+      "routine_share": 0.2,
+      "creative_share": 0.55,
+      "social_share": 0.25
+    }
+  },
+  "2519": {
+    "raw_probability": 0.18,
+    "confidence": "composite",
+    "source_soc": [
+      "15-1199"
+    ],
+    "task_breakdown": {
+      "routine_share": 0.25,
+      "creative_share": 0.5,
+      "social_share": 0.25
+    },
+    "note": "15-1199 (Computer Occupations, All Other) not present in F-O 2013 dataset; raw_probability is a composite estimate."
+  },
+  "3512": {
+    "raw_probability": 0.42,
+    "confidence": "composite",
+    "source_soc": [
+      "15-1151"
+    ],
+    "task_breakdown": {
+      "routine_share": 0.45,
+      "creative_share": 0.2,
+      "social_share": 0.35
+    },
+    "note": "15-1151 (Computer User Support Specialists) not present in F-O 2013 dataset; raw_probability is a composite estimate."
+  },
+  "3514": {
+    "raw_probability": 0.03,
+    "confidence": "low",
+    "source_soc": [
+      "15-1134",
+      "15-1142"
+    ],
+    "task_breakdown": {
+      "routine_share": 0.45,
+      "creative_share": 0.3,
+      "social_share": 0.25
+    },
+    "note": "Only 15-1142 (Network and Computer Systems Administrators) present in F-O. F-O treated this as low-automation knowledge work; current generative-AI exposure is likely materially higher."
+  },
+  "4110": {
+    "raw_probability": 0.97,
+    "confidence": "high",
+    "source_soc": [
+      "43-3061",
+      "43-9061"
+    ],
+    "task_breakdown": {
+      "routine_share": 0.8,
+      "creative_share": 0.05,
+      "social_share": 0.15
+    }
+  },
+  "5223": {
+    "raw_probability": 0.95,
+    "confidence": "high",
+    "source_soc": [
+      "41-2022",
+      "41-2031"
+    ],
+    "task_breakdown": {
+      "routine_share": 0.65,
+      "creative_share": 0.1,
+      "social_share": 0.25
+    }
+  },
+  "5311": {
+    "raw_probability": 0.08,
+    "confidence": "high",
+    "source_soc": [
+      "39-1021",
+      "39-9011"
+    ],
+    "task_breakdown": {
+      "routine_share": 0.2,
+      "creative_share": 0.2,
+      "social_share": 0.6
+    }
+  },
+  "6111": {
+    "raw_probability": 0.57,
+    "confidence": "medium",
+    "source_soc": [
+      "45-1011",
+      "45-2091"
+    ],
+    "task_breakdown": {
+      "routine_share": 0.7,
+      "creative_share": 0.15,
+      "social_share": 0.15
+    },
+    "note": "Only 45-1011 (First-Line Supervisors of Farming) present in F-O. Crop labourer SOCs not covered."
+  },
+  "7115": {
+    "raw_probability": 0.72,
+    "confidence": "high",
+    "source_soc": [
+      "47-2031"
+    ],
+    "task_breakdown": {
+      "routine_share": 0.55,
+      "creative_share": 0.25,
+      "social_share": 0.2
+    }
+  },
+  "7411": {
+    "raw_probability": 0.15,
+    "confidence": "high",
+    "source_soc": [
+      "47-2111",
+      "47-2231"
+    ],
+    "task_breakdown": {
+      "routine_share": 0.3,
+      "creative_share": 0.3,
+      "social_share": 0.4
+    }
+  },
+  "7412": {
+    "raw_probability": 0.644,
+    "confidence": "medium",
+    "source_soc": [
+      "47-4021",
+      "49-1011",
+      "49-2092",
+      "49-2093",
+      "49-2094",
+      "49-2095",
+      "49-2096",
+      "49-2098",
+      "49-3053",
+      "49-9011",
+      "49-9012",
+      "49-9031",
+      "49-9097"
+    ],
+    "task_breakdown": {
+      "routine_share": 0.55,
+      "creative_share": 0.2,
+      "social_share": 0.25
+    },
+    "note": "Mean across 13 crosswalked SOCs including a supervisor role (49-1011, prob 0.003) which pulls the mean down. Range across SOCs: 0.003 - 0.93."
+  },
+  "7421": {
+    "raw_probability": 0.536,
+    "confidence": "medium",
+    "source_soc": [
+      "49-1011",
+      "49-2011",
+      "49-2091",
+      "49-2093",
+      "49-2094",
+      "49-2095",
+      "49-2096"
+    ],
+    "task_breakdown": {
+      "routine_share": 0.55,
+      "creative_share": 0.2,
+      "social_share": 0.25
+    },
+    "note": "Mean across 7 crosswalked SOCs including a supervisor role (49-1011, prob 0.003)."
+  },
+  "9211": {
+    "raw_probability": 0.87,
+    "confidence": "composite",
+    "source_soc": [
+      "45-2092",
+      "45-2099"
+    ],
+    "task_breakdown": {
+      "routine_share": 0.8,
+      "creative_share": 0.05,
+      "social_share": 0.15
+    },
+    "note": "Crop farm labourer SOCs (45-2092, 45-2099) not present in F-O 2013 dataset; raw_probability is a composite estimate."
+  },
+  "9520": {
+    "raw_probability": 0.94,
+    "confidence": "high",
+    "source_soc": [
+      "41-9091"
+    ],
+    "task_breakdown": {
+      "routine_share": 0.6,
+      "creative_share": 0.15,
+      "social_share": 0.25
+    }
+  }
+}

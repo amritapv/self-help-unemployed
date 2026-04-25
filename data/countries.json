@@ -1,0 +1,542 @@
+{
+  "_meta": {
+    "schema_version": "0.1.0",
+    "description": "Country configurations and econometric data. Demo coverage: Ghana (GH), India (IN).",
+    "last_updated": "2026-04-25",
+    "linkage": {
+      "wage_data": "Keys are ISCO-08 4-digit codes; full titles in isco08_taxonomy.json",
+      "automation_calibration": "infrastructure_factor multiplies raw scores from frey_osborne.json before reporting",
+      "sectors": "Sector slugs are stable and reused across all countries and across wage_data.<isco>.sector"
+    },
+    "data_sources": [
+      "ILOSTAT (sector employment, growth rates)",
+      "World Bank WDI (youth unemployment, informality)",
+      "Country statistical offices (currency, education taxonomy)",
+      "Naukri / GhanaJobs / PLFS (wage estimates, illustrative)"
+    ],
+    "honesty_note": "Wage and growth figures are plausible composite estimates for hackathon demo. Production replaces these with live ILOSTAT/WDI feeds.",
+    "anchoring_note": "Sectors agriculture/services share_employment and growth_annual anchored to World Bank WDI (latest available year, 2024-25) for GH and IN where directly comparable. WDI 'industry' aggregates manufacturing + construction + mining + utilities; finer 7-sector splits (ict, renewable_energy, retail, finance, healthcare, education, construction) are composite estimates. wage_data is composite at ISCO 4-digit; ILOSTAT only publishes wages at ISCO 1-digit major group (see data/raw/ilostat/EAR_4MTH_SEX_OCU_NB_GHA_IND.csv) which doesn't decompose to 4-digit. demographics.youth_unemployment_rate and informality_rate are composite estimates."
+  },
+  "GH": {
+    "country_code": "GH",
+    "country_name": "Ghana",
+    "context": "Sub-Saharan Africa, urban informal economy with growing ICT sector",
+    "language": {
+      "primary": "en",
+      "local": [
+        "tw",
+        "ee",
+        "ha",
+        "ga",
+        "fa"
+      ]
+    },
+    "currency": {
+      "code": "GHS",
+      "symbol": "GH₵",
+      "name": "Ghanaian Cedi"
+    },
+    "regions": [
+      {
+        "code": "greater_accra",
+        "name": "Greater Accra",
+        "type": "urban_metro"
+      },
+      {
+        "code": "ashanti",
+        "name": "Ashanti",
+        "type": "mixed"
+      },
+      {
+        "code": "northern",
+        "name": "Northern",
+        "type": "rural_ag"
+      },
+      {
+        "code": "western",
+        "name": "Western",
+        "type": "coastal_industrial"
+      },
+      {
+        "code": "volta",
+        "name": "Volta",
+        "type": "rural_ag"
+      }
+    ],
+    "education_taxonomy": [
+      {
+        "local": "BECE",
+        "isced": "2",
+        "label": "Lower secondary (Basic Education Certificate)"
+      },
+      {
+        "local": "WASSCE",
+        "isced": "3",
+        "label": "Upper secondary (West African Senior Secondary)"
+      },
+      {
+        "local": "HND",
+        "isced": "5",
+        "label": "Short-cycle tertiary (Higher National Diploma)"
+      },
+      {
+        "local": "Bachelor's",
+        "isced": "6",
+        "label": "Bachelor's degree"
+      },
+      {
+        "local": "Master's",
+        "isced": "7",
+        "label": "Master's degree"
+      }
+    ],
+    "automation_calibration": {
+      "infrastructure_factor": 0.6,
+      "rationale": "Lower capital-intensity for automation deployment in Ghanaian context. Frey-Osborne raw scores discounted 40%.",
+      "applies_to": "all values in frey_osborne.json"
+    },
+    "opportunity_types": [
+      "formal_employment",
+      "self_employment",
+      "gig",
+      "apprenticeship",
+      "training_pathway"
+    ],
+    "sectors": {
+      "ict": {
+        "growth_annual": 0.14,
+        "share_employment": 0.04,
+        "informal_share": 0.3
+      },
+      "renewable_energy": {
+        "growth_annual": 0.22,
+        "share_employment": 0.01,
+        "informal_share": 0.4
+      },
+      "manufacturing": {
+        "growth_annual": 0.06,
+        "share_employment": 0.13,
+        "informal_share": 0.65
+      },
+      "services": {
+        "growth_annual": 0.06,
+        "share_employment": 0.41,
+        "informal_share": 0.78
+      },
+      "agriculture": {
+        "growth_annual": 0.03,
+        "share_employment": 0.3,
+        "informal_share": 0.96
+      },
+      "construction": {
+        "growth_annual": 0.07,
+        "share_employment": 0.05,
+        "informal_share": 0.85
+      },
+      "retail": {
+        "growth_annual": 0.05,
+        "share_employment": 0.18,
+        "informal_share": 0.92
+      },
+      "finance": {
+        "growth_annual": 0.08,
+        "share_employment": 0.02,
+        "informal_share": 0.15
+      },
+      "healthcare": {
+        "growth_annual": 0.06,
+        "share_employment": 0.03,
+        "informal_share": 0.45
+      },
+      "education": {
+        "growth_annual": 0.04,
+        "share_employment": 0.04,
+        "informal_share": 0.3
+      }
+    },
+    "wage_data": {
+      "_unit": "GHS per month",
+      "_source": "Composite estimate (Ghana Statistical Service + GhanaJobs aggregator), 2024-2025",
+      "2519": {
+        "min": 3500,
+        "max": 7000,
+        "median": 4800,
+        "sector": "ict"
+      },
+      "3512": {
+        "min": 1500,
+        "max": 2800,
+        "median": 2000,
+        "sector": "ict"
+      },
+      "3514": {
+        "min": 1800,
+        "max": 3200,
+        "median": 2400,
+        "sector": "ict"
+      },
+      "7421": {
+        "min": 1800,
+        "max": 2400,
+        "median": 2100,
+        "sector": "services"
+      },
+      "7411": {
+        "min": 1500,
+        "max": 2500,
+        "median": 1900,
+        "sector": "construction"
+      },
+      "7412": {
+        "min": 1400,
+        "max": 2300,
+        "median": 1750,
+        "sector": "manufacturing"
+      },
+      "5223": {
+        "min": 800,
+        "max": 1500,
+        "median": 1100,
+        "sector": "retail"
+      },
+      "9520": {
+        "min": 600,
+        "max": 1500,
+        "median": 950,
+        "sector": "retail"
+      },
+      "9211": {
+        "min": 500,
+        "max": 900,
+        "median": 700,
+        "sector": "agriculture"
+      },
+      "6111": {
+        "min": 700,
+        "max": 1400,
+        "median": 1000,
+        "sector": "agriculture"
+      },
+      "7115": {
+        "min": 1200,
+        "max": 2200,
+        "median": 1600,
+        "sector": "construction"
+      },
+      "5311": {
+        "min": 800,
+        "max": 1500,
+        "median": 1100,
+        "sector": "education"
+      },
+      "4110": {
+        "min": 1500,
+        "max": 2500,
+        "median": 1900,
+        "sector": "services"
+      }
+    },
+    "demographics": {
+      "youth_unemployment_rate": 0.128,
+      "informality_rate": 0.89,
+      "youth_pop_share": 0.2,
+      "median_age": 21.5,
+      "urbanization_rate": 0.58
+    },
+    "training_pathways": [
+      {
+        "id": "nvti_solar_2wk",
+        "name": "Solar Panel Installation (Energy Commission)",
+        "duration_weeks": 2,
+        "cost_local": 0,
+        "leads_to_isco": [
+          "7411"
+        ]
+      },
+      {
+        "id": "nvti_mobile_3mo",
+        "name": "Mobile Device Technician Certification (NVTI)",
+        "duration_weeks": 12,
+        "cost_local": 350,
+        "leads_to_isco": [
+          "7421"
+        ]
+      },
+      {
+        "id": "ghictpa_basic_6mo",
+        "name": "ICT Basic Skills (Ghana ICT Professionals Assoc)",
+        "duration_weeks": 24,
+        "cost_local": 800,
+        "leads_to_isco": [
+          "3512",
+          "3514"
+        ]
+      }
+    ]
+  },
+  "IN": {
+    "country_code": "IN",
+    "country_name": "India",
+    "context": "South Asia, large youth bulge, dual economy with strong formal ICT sector and large informal/agricultural workforce",
+    "language": {
+      "primary": "hi",
+      "secondary": "en",
+      "local": [
+        "mr",
+        "ta",
+        "te",
+        "bn",
+        "gu",
+        "kn",
+        "ml",
+        "pa",
+        "or",
+        "as"
+      ]
+    },
+    "currency": {
+      "code": "INR",
+      "symbol": "₹",
+      "name": "Indian Rupee"
+    },
+    "regions": [
+      {
+        "code": "maharashtra",
+        "name": "Maharashtra",
+        "type": "industrial_metro"
+      },
+      {
+        "code": "karnataka",
+        "name": "Karnataka",
+        "type": "ict_metro"
+      },
+      {
+        "code": "tamil_nadu",
+        "name": "Tamil Nadu",
+        "type": "industrial_mixed"
+      },
+      {
+        "code": "uttar_pradesh",
+        "name": "Uttar Pradesh",
+        "type": "rural_ag"
+      },
+      {
+        "code": "bihar",
+        "name": "Bihar",
+        "type": "rural_ag"
+      }
+    ],
+    "education_taxonomy": [
+      {
+        "local": "SSC",
+        "isced": "2",
+        "label": "Lower secondary (Class 10)"
+      },
+      {
+        "local": "HSC",
+        "isced": "3",
+        "label": "Upper secondary (Class 12)"
+      },
+      {
+        "local": "Diploma",
+        "isced": "5",
+        "label": "Short-cycle tertiary (ITI/Polytechnic)"
+      },
+      {
+        "local": "Bachelor's",
+        "isced": "6",
+        "label": "Bachelor's degree"
+      },
+      {
+        "local": "Master's",
+        "isced": "7",
+        "label": "Master's degree"
+      }
+    ],
+    "automation_calibration": {
+      "infrastructure_factor": 0.85,
+      "rationale": "Higher automation adoption than Ghana but still below high-income baseline. Frey-Osborne raw scores discounted 15%.",
+      "applies_to": "all values in frey_osborne.json"
+    },
+    "opportunity_types": [
+      "formal_employment",
+      "self_employment",
+      "gig",
+      "apprenticeship",
+      "training_pathway",
+      "government_scheme"
+    ],
+    "sectors": {
+      "ict": {
+        "growth_annual": 0.18,
+        "share_employment": 0.04,
+        "informal_share": 0.2
+      },
+      "renewable_energy": {
+        "growth_annual": 0.3,
+        "share_employment": 0.01,
+        "informal_share": 0.35
+      },
+      "manufacturing": {
+        "growth_annual": 0.08,
+        "share_employment": 0.11,
+        "informal_share": 0.75
+      },
+      "services": {
+        "growth_annual": 0.1,
+        "share_employment": 0.32,
+        "informal_share": 0.7
+      },
+      "agriculture": {
+        "growth_annual": 0.045,
+        "share_employment": 0.42,
+        "informal_share": 0.95
+      },
+      "construction": {
+        "growth_annual": 0.09,
+        "share_employment": 0.12,
+        "informal_share": 0.9
+      },
+      "retail": {
+        "growth_annual": 0.06,
+        "share_employment": 0.1,
+        "informal_share": 0.85
+      },
+      "finance": {
+        "growth_annual": 0.11,
+        "share_employment": 0.02,
+        "informal_share": 0.1
+      },
+      "healthcare": {
+        "growth_annual": 0.08,
+        "share_employment": 0.03,
+        "informal_share": 0.4
+      },
+      "education": {
+        "growth_annual": 0.05,
+        "share_employment": 0.04,
+        "informal_share": 0.25
+      }
+    },
+    "wage_data": {
+      "_unit": "INR per month",
+      "_source": "Composite estimate (Naukri + AmbitionBox + PLFS 2023), national average",
+      "2519": {
+        "min": 30000,
+        "max": 80000,
+        "median": 45000,
+        "sector": "ict"
+      },
+      "3512": {
+        "min": 18000,
+        "max": 35000,
+        "median": 24000,
+        "sector": "ict"
+      },
+      "3514": {
+        "min": 22000,
+        "max": 42000,
+        "median": 30000,
+        "sector": "ict"
+      },
+      "7421": {
+        "min": 15000,
+        "max": 30000,
+        "median": 20000,
+        "sector": "services"
+      },
+      "7411": {
+        "min": 14000,
+        "max": 25000,
+        "median": 18000,
+        "sector": "construction"
+      },
+      "7412": {
+        "min": 13000,
+        "max": 23000,
+        "median": 17000,
+        "sector": "manufacturing"
+      },
+      "5223": {
+        "min": 12000,
+        "max": 22000,
+        "median": 16000,
+        "sector": "retail"
+      },
+      "9520": {
+        "min": 8000,
+        "max": 18000,
+        "median": 12000,
+        "sector": "retail"
+      },
+      "9211": {
+        "min": 7000,
+        "max": 12000,
+        "median": 9000,
+        "sector": "agriculture"
+      },
+      "6111": {
+        "min": 10000,
+        "max": 18000,
+        "median": 13000,
+        "sector": "agriculture"
+      },
+      "7115": {
+        "min": 14000,
+        "max": 25000,
+        "median": 18000,
+        "sector": "construction"
+      },
+      "5311": {
+        "min": 10000,
+        "max": 18000,
+        "median": 13000,
+        "sector": "education"
+      },
+      "4110": {
+        "min": 18000,
+        "max": 30000,
+        "median": 22000,
+        "sector": "services"
+      }
+    },
+    "demographics": {
+      "youth_unemployment_rate": 0.17,
+      "informality_rate": 0.8,
+      "youth_pop_share": 0.27,
+      "median_age": 28.4,
+      "urbanization_rate": 0.36
+    },
+    "training_pathways": [
+      {
+        "id": "pmkvy_solar_3mo",
+        "name": "Solar PV Installer (PMKVY)",
+        "duration_weeks": 12,
+        "cost_local": 0,
+        "leads_to_isco": [
+          "7411"
+        ]
+      },
+      {
+        "id": "iti_electronics_2yr",
+        "name": "ITI Electronics Mechanic (2-year)",
+        "duration_weeks": 96,
+        "cost_local": 5000,
+        "leads_to_isco": [
+          "7421",
+          "7412"
+        ]
+      },
+      {
+        "id": "naukri_ict_6mo",
+        "name": "ICT User Support Bootcamp",
+        "duration_weeks": 24,
+        "cost_local": 15000,
+        "leads_to_isco": [
+          "3512",
+          "3514"
+        ]
+      }
+    ]
+  }
+}
