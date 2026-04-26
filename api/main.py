@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
+import functools
 import json
 from pathlib import Path
 import anthropic
@@ -266,6 +267,39 @@ async def meta_countries():
             "sectors": list((cfg.get("sectors") or {}).keys()),
         })
     return {"countries": out}
+
+
+@functools.lru_cache(maxsize=64)
+def _generate_greeting(language: str) -> str:
+    """Cached one-shot Haiku call: returns the chat opener in the requested
+    language. Re-fires only when a new language is requested."""
+    name = _language_name(language)
+    response = claude_client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=200,
+        messages=[{
+            "role": "user",
+            "content": (
+                f"Write a 2-sentence greeting in {name} for a skills-assessment chatbot. "
+                "Sentence 1: friendly hello plus 'I'm here to help you understand your skills "
+                "and find opportunities.' Sentence 2: ask about the user's educational background "
+                "(could be formal schooling, certifications, or any training). "
+                "Tone: warm, casual, second-person informal. "
+                f"Output ONLY the greeting in {name} — no quotes, no preamble, no English."
+            ),
+        }],
+    )
+    return response.content[0].text.strip()
+
+
+@app.get("/chat/greeting")
+async def chat_greeting(language: str = "en"):
+    """Localized chat opener. Cached server-side per language."""
+    try:
+        return {"greeting": _generate_greeting(language)}
+    except Exception as exc:
+        print(f"[greeting] failed for {language}: {exc}")
+        raise HTTPException(status_code=503, detail="greeting unavailable")
 
 
 @app.get("/admin/countries/template")

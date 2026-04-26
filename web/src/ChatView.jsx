@@ -6,9 +6,32 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 // Web Speech API support check
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
 
+// Map our top-bar language code (ISO 639-1) to a BCP-47 locale that the
+// Web Speech API expects. Browser support varies — unsupported locales fail
+// silently, so worst case the mic just doesn't transcribe (button still works).
+const SPEECH_LOCALE = {
+  en: 'en-US', zh: 'zh-CN', hi: 'hi-IN', es: 'es-ES', fr: 'fr-FR',
+  ar: 'ar-SA', bn: 'bn-IN', pt: 'pt-BR', ru: 'ru-RU', ur: 'ur-PK',
+  id: 'id-ID', de: 'de-DE', ja: 'ja-JP', sw: 'sw-KE', mr: 'mr-IN',
+  te: 'te-IN', tr: 'tr-TR', ta: 'ta-IN', vi: 'vi-VN', ko: 'ko-KR',
+}
+
 // Tiny helper for the {placeholder} templates in the i18n strings.
 function fmt(template, vars) {
   return template.replace(/\{(\w+)\}/g, (_, k) => (k in vars ? vars[k] : `{${k}}`))
+}
+
+// Fetch the chat opener from the backend so any language gets a proper
+// translated greeting, not a fallback English one. Resolves to a string.
+async function fetchGreeting(language) {
+  try {
+    const r = await fetch(`${API_URL}/chat/greeting?language=${encodeURIComponent(language)}`)
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
+    const data = await r.json()
+    return data.greeting || t(language, 'greeting')
+  } catch {
+    return t(language, 'greeting')  // fallback to local i18n
+  }
 }
 
 function ChatView({ country, language, onProfileComplete, onNavigate }) {
@@ -21,17 +44,10 @@ function ChatView({ country, language, onProfileComplete, onNavigate }) {
   const [assessmentReady, setAssessmentReady] = useState(false)
   const [hasOpportunities, setHasOpportunities] = useState(false)
   const [isListening, setIsListening] = useState(false)
-  const [speechLang, setSpeechLang] = useState('en-US')
   const recognitionRef = useRef(null)
 
-  const SPEECH_LANGUAGES = [
-    { label: 'English', code: 'en-US' },
-    { label: 'Hindi', code: 'hi-IN' },
-    { label: 'Telugu', code: 'te-IN' },
-    { label: 'Japanese', code: 'ja-JP' },
-    { label: 'Tagalog', code: 'fil-PH' },
-    { label: 'Spanish', code: 'es-ES' },
-  ]
+  // Speech locale follows the top-bar language. One control, both reading and writing.
+  const speechLocale = SPEECH_LOCALE[language] || 'en-US'
 
   useEffect(() => {
     if (!SpeechRecognition) return
@@ -39,7 +55,7 @@ function ChatView({ country, language, onProfileComplete, onNavigate }) {
     const recognition = new SpeechRecognition()
     recognition.continuous = true
     recognition.interimResults = true
-    recognition.lang = speechLang
+    recognition.lang = speechLocale
 
     recognition.onresult = (event) => {
       const transcript = Array.from(event.results)
@@ -52,7 +68,7 @@ function ChatView({ country, language, onProfileComplete, onNavigate }) {
     recognition.onerror = () => setIsListening(false)
 
     recognitionRef.current = recognition
-  }, [speechLang])
+  }, [speechLocale])
 
   const toggleListening = () => {
     if (!recognitionRef.current) return
@@ -64,6 +80,25 @@ function ChatView({ country, language, onProfileComplete, onNavigate }) {
       setIsListening(true)
     }
   }
+
+  // Initial greeting: pull a translated one from the backend on mount, replacing
+  // the i18n fallback. Cached server-side so this is a one-time cost per language.
+  useEffect(() => {
+    let cancelled = false
+    fetchGreeting(language).then((g) => {
+      if (cancelled) return
+      setMessages((prev) => {
+        // Only replace if we still have only the seeded fallback message
+        if (prev.length === 1 && prev[0].role === 'assistant') {
+          return [{ role: 'assistant', content: g }]
+        }
+        return prev
+      })
+    })
+    return () => { cancelled = true }
+    // Run once on mount only — language-change handler below covers updates.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Reset chat when language changes. First switch (still on default greeting only)
   // happens silently. Once the user has interacted, we confirm before resetting.
@@ -80,11 +115,16 @@ function ChatView({ country, language, onProfileComplete, onNavigate }) {
         return
       }
     }
+    // Show local fallback immediately, then replace with the backend-translated
+    // greeting when it arrives.
     setMessages([{ role: 'assistant', content: t(language, 'greeting') }])
     setCollectedData(null)
     setAssessmentReady(false)
     setHasOpportunities(false)
     prevLangRef.current = language
+    fetchGreeting(language).then((g) => {
+      setMessages([{ role: 'assistant', content: g }])
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language])
 
@@ -269,17 +309,6 @@ function ChatView({ country, language, onProfileComplete, onNavigate }) {
         isListening ? 'border-red-300 ring-2 ring-red-100' : 'border-gray-100 focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-300'
       }`}>
         <div className="flex items-center gap-2 p-2">
-          {SpeechRecognition && (
-            <select
-              value={speechLang}
-              onChange={(e) => { setSpeechLang(e.target.value); if (isListening) recognitionRef.current?.stop() }}
-              className="text-xs text-gray-600 bg-gray-50 border-0 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-200"
-            >
-              {SPEECH_LANGUAGES.map(l => (
-                <option key={l.code} value={l.code}>{l.label}</option>
-              ))}
-            </select>
-          )}
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}

@@ -41,19 +41,9 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
-# ── Language map ──────────────────────────────────────────────────────────────
-_LANGUAGE_NAMES = {
-    "en": "English",
-    "hi": "Hindi",
-    "es": "Spanish",
-    "ar": "Arabic",
-    "fr": "French",
-}
-
-
-def _language_name(code: str) -> str:
-    """Map a language code to its English name. Falls back to English silently."""
-    return _LANGUAGE_NAMES.get((code or "en").lower(), "English")
+# Language name resolution is shared across all engines via platform_config —
+# adding a new language is a JSON edit in data/platform_config.json, not code.
+from api.platform_config import language_name as _language_name  # noqa: E402
 
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
