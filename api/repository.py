@@ -134,6 +134,69 @@ def attach_opportunities(
     return True
 
 
+# ── Telegram session storage ──────────────────────────────────────────────────
+
+def get_telegram_session(chat_id: int) -> Optional[dict]:
+    """Load a telegram session row. Returns None if no session exists."""
+    init_db()
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT chat_id, messages, collected_data, profile_id, country_code, language "
+            "FROM telegram_sessions WHERE chat_id = ?",
+            (chat_id,),
+        ).fetchone()
+    if row is None:
+        return None
+    return {
+        "chat_id": row["chat_id"],
+        "messages": json.loads(row["messages"]) if row["messages"] else [],
+        "collected_data": json.loads(row["collected_data"]) if row["collected_data"] else None,
+        "profile_id": row["profile_id"],
+        "country_code": row["country_code"],
+        "language": row["language"],
+    }
+
+
+def upsert_telegram_session(
+    chat_id: int,
+    messages: list,
+    collected_data: Optional[dict] = None,
+    profile_id: Optional[str] = None,
+    country_code: str = "GH",
+    language: str = "en",
+) -> None:
+    init_db()
+    with connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO telegram_sessions
+                (chat_id, messages, collected_data, profile_id, country_code, language, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+            ON CONFLICT(chat_id) DO UPDATE SET
+                messages = excluded.messages,
+                collected_data = excluded.collected_data,
+                profile_id = excluded.profile_id,
+                country_code = excluded.country_code,
+                language = excluded.language,
+                updated_at = excluded.updated_at
+            """,
+            (
+                chat_id,
+                json.dumps(messages),
+                json.dumps(collected_data) if collected_data is not None else None,
+                profile_id,
+                country_code,
+                language,
+            ),
+        )
+
+
+def delete_telegram_session(chat_id: int) -> None:
+    init_db()
+    with connect() as conn:
+        conn.execute("DELETE FROM telegram_sessions WHERE chat_id = ?", (chat_id,))
+
+
 def delete_synthetic(country_code: Optional[str] = None) -> int:
     """Wipe synthetic seed rows. Returns count deleted."""
     init_db()

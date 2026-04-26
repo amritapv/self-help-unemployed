@@ -289,9 +289,140 @@ function SkillGaps({ gaps }) {
   )
 }
 
+// ── Onboarding instructions ───────────────────────────────────────────────────
+
+function OnboardingPanel({ onCountryUpserted }) {
+  const [downloading, setDownloading] = useState(false)
+
+  const handleDownloadTemplate = async () => {
+    setDownloading(true)
+    try {
+      const r = await fetch(`${API_URL}/admin/countries/template?reference=GH`)
+      const json = await r.json()
+      const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'country-template.json'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  const curlExample = `curl -X POST http://localhost:8000/admin/countries \\
+  -H "Content-Type: application/json" \\
+  -d @country-NG.json`
+
+  return (
+    <div className="space-y-5">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-gray-900">Onboard or update a country</h2>
+        <p className="text-sm text-gray-600 mt-1 max-w-2xl">
+          The platform is fully data-driven. To add a new country (or revise an existing
+          one) you POST a single JSON document to the admin endpoint. No code change,
+          no restart — every endpoint picks up the change on the next request.
+        </p>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <h3 className="font-semibold text-gray-900 mb-4">How it works</h3>
+        <ol className="space-y-4 text-sm text-gray-700">
+          <li className="flex gap-3">
+            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-sm">1</span>
+            <div className="flex-1">
+              <div className="font-medium text-gray-900">Download the template</div>
+              <div className="text-gray-600 mt-0.5">A pre-filled Ghana block to copy and edit. Same shape the platform uses internally.</div>
+              <button
+                onClick={handleDownloadTemplate}
+                disabled={downloading}
+                className="mt-2 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-50"
+              >
+                {downloading ? 'Preparing…' : 'Download country-template.json'}
+              </button>
+            </div>
+          </li>
+
+          <li className="flex gap-3">
+            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-sm">2</span>
+            <div className="flex-1">
+              <div className="font-medium text-gray-900">Edit the JSON for your country</div>
+              <div className="text-gray-600 mt-0.5">
+                Fill in the required fields below. Anything not listed here is optional but preserved (e.g.{' '}
+                <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">training_pathways</code>,{' '}
+                <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">localization</code>).
+              </div>
+            </div>
+          </li>
+
+          <li className="flex gap-3">
+            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-sm">3</span>
+            <div className="flex-1">
+              <div className="font-medium text-gray-900">POST it to the admin endpoint</div>
+              <div className="text-gray-600 mt-0.5">Validation tells you what's missing or malformed.</div>
+              <pre className="mt-2 bg-gray-900 text-gray-100 text-xs p-3 rounded-lg overflow-x-auto">
+                <code>{curlExample}</code>
+              </pre>
+            </div>
+          </li>
+
+          <li className="flex gap-3">
+            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-sm">4</span>
+            <div className="flex-1">
+              <div className="font-medium text-gray-900">Refresh — your country is live</div>
+              <div className="text-gray-600 mt-0.5">
+                It appears in the Citizen flow's country dropdown and in this dashboard's filters immediately.
+              </div>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <h3 className="font-semibold text-gray-900 mb-3">Required fields</h3>
+        <dl className="grid md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <FieldDoc name="country_code" desc='Two-letter uppercase ISO 3166-1, e.g. "NG"' />
+          <FieldDoc name="country_name" desc='Display name, e.g. "Nigeria"' />
+          <FieldDoc name="language" desc='{"primary": "en", "local": ["ha", "yo"]}' />
+          <FieldDoc name="currency" desc='{"code": "NGN", "symbol": "₦"}' />
+          <FieldDoc name="regions" desc='List of {code, name, type} (type: urban_metro | rural_ag | mixed)' />
+          <FieldDoc name="sectors" desc="Map of slug → {growth_annual, share_employment, informal_share}. Slugs must be stable across countries." />
+          <FieldDoc name="wage_data" desc="Map of 4-digit ISCO code → {min, max, median, sector}. ISCO codes ideally have entries in frey_osborne.json; if not, the major group falls back automatically." />
+          <FieldDoc name="automation_calibration" desc='{"infrastructure_factor": 0.4–1.2, "rationale": "..."} — multiplies Frey-Osborne probabilities to country context.' />
+          <FieldDoc name="opportunity_types" desc='Subset of: formal_employment, self_employment, gig, apprenticeship, training_pathway' />
+          <FieldDoc name="education_taxonomy" desc="ISCED levels mapped to local credential names. Same shape as the GH/IN templates." />
+          <FieldDoc name="demographics" desc='{youth_unemployment_rate, informality_rate, urbanization_rate, median_age, youth_pop_share}' />
+        </dl>
+      </div>
+
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-900">
+        <div className="font-semibold mb-1">Notes</div>
+        <ul className="space-y-1 list-disc pl-5">
+          <li>UI translations for a new primary language still live in <code className="text-xs bg-amber-100 px-1 rounded">web/src/i18n.js</code> — drop a new entry there if you want native-language UI strings. The platform falls back to English otherwise.</li>
+          <li>Sector slugs (<code className="text-xs bg-amber-100 px-1 rounded">ict</code>, <code className="text-xs bg-amber-100 px-1 rounded">renewable_energy</code>, etc.) are intentionally shared across countries so cross-country aggregation works. Reuse existing slugs where possible.</li>
+          <li>The endpoint is open in this build. Don't expose it to the public internet without auth.</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+function FieldDoc({ name, desc }) {
+  return (
+    <div>
+      <dt className="font-mono text-xs text-blue-700 font-semibold">{name}</dt>
+      <dd className="text-gray-600 mt-0.5">{desc}</dd>
+    </div>
+  )
+}
+
 // ── Main view ─────────────────────────────────────────────────────────────────
 
 export default function PolicymakerView() {
+  const [tab, setTab] = useState('dashboard')  // 'dashboard' | 'onboard'
   const [meta, setMeta] = useState(null)
   const [filters, setFilters] = useState({ country: 'GH', region: '', sector: '' })
   const [report, setReport] = useState(null)
@@ -331,13 +462,54 @@ export default function PolicymakerView() {
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Policymaker dashboard</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Aggregate skills, automation exposure, and opportunity gaps across assessed youth profiles.
-        </p>
+      <div className="flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {tab === 'dashboard' ? 'Policymaker dashboard' : 'Configure your country'}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {tab === 'dashboard'
+              ? 'Aggregate skills, automation exposure, and opportunity gaps across assessed youth profiles.'
+              : 'Onboard a new country or update an existing one — no code change required.'}
+          </p>
+        </div>
+        <div className="bg-gray-100 rounded-lg p-1 flex gap-1 text-sm">
+          <button
+            onClick={() => setTab('dashboard')}
+            className={`px-4 py-1.5 rounded-md transition ${tab === 'dashboard' ? 'bg-white text-gray-900 font-medium shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+          >
+            Dashboard
+          </button>
+          <button
+            onClick={() => setTab('onboard')}
+            className={`px-4 py-1.5 rounded-md transition ${tab === 'onboard' ? 'bg-white text-gray-900 font-medium shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+          >
+            Onboard country
+          </button>
+        </div>
       </div>
 
+      {tab === 'onboard' ? (
+        <OnboardingPanel />
+      ) : (
+        <DashboardBody
+          meta={meta}
+          filters={filters}
+          setFilters={setFilters}
+          report={report}
+          loading={loading}
+          error={error}
+          econ={econ}
+          topGrowthSector={topGrowthSector}
+        />
+      )}
+    </div>
+  )
+}
+
+function DashboardBody({ meta, filters, setFilters, report, loading, error, econ, topGrowthSector }) {
+  return (
+    <>
       <FilterRow
         meta={meta}
         country={filters.country}
@@ -398,6 +570,6 @@ export default function PolicymakerView() {
           <SkillGaps gaps={report.opportunity_gaps} />
         </>
       )}
-    </div>
+    </>
   )
 }

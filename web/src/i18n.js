@@ -10,19 +10,13 @@ export const LANGUAGES = [
   { code: 'fr', label: 'Français', native: 'Français (French)' },
 ]
 
-// NOTE: The literal command tokens 'Test: Amara', 'Test: Bern', 'Test: Cal'
-// MUST stay in Latin script across all languages — those are the exact strings
-// the user has to type into the chat to trigger the test persona hotkey.
-
 export const STRINGS = {
   en: {
     greeting:
-      "Hi! I'm here to help you understand your skills and find opportunities. Let's start - what's your educational background? This could be formal schooling, certifications, or any training you've done.\n\n" +
-      "Tip: type 'Test: Amara', 'Test: Bern', or 'Test: Cal' to skip the chat and run a simulated assessment with a pre-built persona.",
-    inputPlaceholder: "Type your message... or 'Test: Amara' / 'Test: Bern' / 'Test: Cal'",
+      "Hi! I'm here to help you understand your skills and find opportunities. Let's start - what's your educational background? This could be formal schooling, certifications, or any training you've done.",
+    inputPlaceholder: 'Type your message...',
     sendButton: 'Send',
     analyzingMessage: 'Analyzing your skills and finding opportunities...',
-    loadingPersona: 'Loading test persona: {label}',
     readyToAnalyze: 'Ready to analyze your skills!',
     generateProfileButton: 'Generate My Skills Profile',
     connectionError: "Sorry, I'm having trouble connecting. Please try again.",
@@ -49,12 +43,10 @@ export const STRINGS = {
     // Hindi (Devanagari). Tone: friendly, second-person informal ("आप" — polite-default,
     // since the audience is unknown youth and Hindi defaults to polite forms in UI).
     greeting:
-      "नमस्ते! मैं आपके कौशल को समझने और अवसर खोजने में आपकी मदद के लिए यहाँ हूँ। चलिए शुरू करते हैं — आपकी शैक्षिक पृष्ठभूमि क्या है? यह औपचारिक पढ़ाई, प्रमाणपत्र, या कोई भी प्रशिक्षण हो सकता है जो आपने लिया हो।\n\n" +
-      "सुझाव: चैट छोड़कर पहले से बनी प्रोफ़ाइल पर सिमुलेटेड मूल्यांकन चलाने के लिए 'Test: Amara', 'Test: Bern', या 'Test: Cal' टाइप करें।",
-    inputPlaceholder: "अपना संदेश लिखें... या 'Test: Amara' / 'Test: Bern' / 'Test: Cal'",
+      "नमस्ते! मैं आपके कौशल को समझने और अवसर खोजने में आपकी मदद के लिए यहाँ हूँ। चलिए शुरू करते हैं — आपकी शैक्षिक पृष्ठभूमि क्या है? यह औपचारिक पढ़ाई, प्रमाणपत्र, या कोई भी प्रशिक्षण हो सकता है जो आपने लिया हो।",
+    inputPlaceholder: 'अपना संदेश लिखें...',
     sendButton: 'भेजें',
     analyzingMessage: 'आपके कौशल का विश्लेषण कर रहे हैं और अवसर ढूँढ रहे हैं...',
-    loadingPersona: 'टेस्ट प्रोफ़ाइल लोड हो रही है: {label}',
     readyToAnalyze: 'आपके कौशल का विश्लेषण करने के लिए तैयार!',
     generateProfileButton: 'मेरी कौशल प्रोफ़ाइल बनाएँ',
     connectionError: 'क्षमा करें, कनेक्ट करने में समस्या हो रही है। कृपया दोबारा प्रयास करें।',
@@ -81,12 +73,10 @@ export const STRINGS = {
     // Spanish, neutral Latin American register (the audience is LMIC youth; "tú" feels
     // friendlier than "usted" for a peer-style assistant).
     greeting:
-      "¡Hola! Estoy aquí para ayudarte a entender tus habilidades y encontrar oportunidades. Empecemos: ¿cuál es tu formación académica? Puede ser educación formal, certificaciones o cualquier capacitación que hayas hecho.\n\n" +
-      "Tip: escribe 'Test: Amara', 'Test: Bern' o 'Test: Cal' para saltar el chat y ver una evaluación simulada con un perfil predefinido.",
-    inputPlaceholder: "Escribe tu mensaje... o 'Test: Amara' / 'Test: Bern' / 'Test: Cal'",
+      "¡Hola! Estoy aquí para ayudarte a entender tus habilidades y encontrar oportunidades. Empecemos: ¿cuál es tu formación académica? Puede ser educación formal, certificaciones o cualquier capacitación que hayas hecho.",
+    inputPlaceholder: 'Escribe tu mensaje...',
     sendButton: 'Enviar',
     analyzingMessage: 'Analizando tus habilidades y buscando oportunidades...',
-    loadingPersona: 'Cargando perfil de prueba: {label}',
     readyToAnalyze: '¡Listo para analizar tus habilidades!',
     generateProfileButton: 'Generar mi perfil de habilidades',
     connectionError: 'Lo siento, tengo problemas para conectarme. Inténtalo de nuevo.',
@@ -111,15 +101,12 @@ export const STRINGS = {
 
   ar: {
     // Arabic (Modern Standard Arabic). Friendly tone, second-person masculine default
-    // (which is the conventional unmarked form in MSA UI copy). Test command tokens
-    // stay in Latin since the user must type them exactly.
+    // (which is the conventional unmarked form in MSA UI copy).
     greeting:
-      "مرحبًا! أنا هنا لمساعدتك على فهم مهاراتك والعثور على فرص. لنبدأ — ما هي خلفيتك التعليمية؟ يمكن أن تكون دراسة رسمية أو شهادات أو أي تدريب أجريته.\n\n" +
-      "تلميح: اكتب 'Test: Amara' أو 'Test: Bern' أو 'Test: Cal' لتخطي المحادثة وتشغيل تقييم تجريبي بملف شخصي جاهز.",
-    inputPlaceholder: "اكتب رسالتك... أو 'Test: Amara' / 'Test: Bern' / 'Test: Cal'",
+      "مرحبًا! أنا هنا لمساعدتك على فهم مهاراتك والعثور على فرص. لنبدأ — ما هي خلفيتك التعليمية؟ يمكن أن تكون دراسة رسمية أو شهادات أو أي تدريب أجريته.",
+    inputPlaceholder: 'اكتب رسالتك...',
     sendButton: 'إرسال',
     analyzingMessage: 'نحلّل مهاراتك ونبحث عن الفرص...',
-    loadingPersona: 'جارٍ تحميل الملف التجريبي: {label}',
     readyToAnalyze: 'جاهز لتحليل مهاراتك!',
     generateProfileButton: 'أنشئ ملف مهاراتي',
     connectionError: 'عذرًا، لدي مشكلة في الاتصال. يُرجى المحاولة مرة أخرى.',
@@ -146,12 +133,10 @@ export const STRINGS = {
     // French, second-person informal "tu" (matches the peer-coach tone of the English source;
     // a more formal product might prefer "vous", but the English greeting is clearly informal).
     greeting:
-      "Salut ! Je suis là pour t'aider à comprendre tes compétences et trouver des opportunités. Commençons — quel est ton parcours scolaire ? Cela peut être une scolarité classique, des certifications ou toute formation que tu as suivie.\n\n" +
-      "Astuce : tape 'Test: Amara', 'Test: Bern' ou 'Test: Cal' pour sauter le chat et lancer une évaluation simulée avec un profil pré-rempli.",
-    inputPlaceholder: "Écris ton message... ou 'Test: Amara' / 'Test: Bern' / 'Test: Cal'",
+      "Salut ! Je suis là pour t'aider à comprendre tes compétences et trouver des opportunités. Commençons — quel est ton parcours scolaire ? Cela peut être une scolarité classique, des certifications ou toute formation que tu as suivie.",
+    inputPlaceholder: 'Écris ton message...',
     sendButton: 'Envoyer',
     analyzingMessage: 'Analyse de tes compétences et recherche d\'opportunités...',
-    loadingPersona: 'Chargement du profil de test : {label}',
     readyToAnalyze: 'Prêt à analyser tes compétences !',
     generateProfileButton: 'Générer mon profil de compétences',
     connectionError: 'Désolé, je n\'arrive pas à me connecter. Réessaie, s\'il te plaît.',

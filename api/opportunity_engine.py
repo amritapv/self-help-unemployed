@@ -43,7 +43,10 @@ def _language_name(code: str) -> str:
     """Map a language code to its English name. Falls back to English silently."""
     return _LANGUAGE_NAMES.get((code or "en").lower(), "English")
 
-ISCO_TITLES: dict[str, str] = {
+# Curated, demo-friendly titles for the ISCO codes we shipped first. Anything not
+# in here falls back to the ESCO/ISCO taxonomy file so newly-onboarded countries
+# get plain-English titles for free without a code change.
+_CURATED_ISCO_TITLES: dict[str, str] = {
     "2512": "Software Developers",
     "2519": "Software and Applications Developers (general)",
     "3512": "ICT User Support Technicians",
@@ -59,6 +62,37 @@ ISCO_TITLES: dict[str, str] = {
     "9211": "Crop Farm Labourers",
     "9520": "Street Vendors",
 }
+
+
+def _build_isco_titles() -> dict[str, str]:
+    """Merge curated titles with whatever 4-digit codes the ISCO/ESCO taxonomy
+    file provides. Curated entries win; taxonomy fills in the rest."""
+    titles = dict(_CURATED_ISCO_TITLES)
+    path = Path(__file__).resolve().parent.parent / "data" / "isco08_taxonomy.json"
+    try:
+        with open(path) as f:
+            taxonomy = json.load(f)
+    except Exception:
+        return titles
+
+    # Multiple ESCO entries can share a 4-digit ISCO code; pick the shortest
+    # label as a rough proxy for "most general".
+    fallback: dict[str, str] = {}
+    for entry in taxonomy.values():
+        code = str(entry.get("iscoCode", "")).strip()
+        label = (entry.get("label") or "").strip()
+        if len(code) != 4 or not label:
+            continue
+        if code not in fallback or len(label) < len(fallback[code]):
+            fallback[code] = label
+
+    for code, label in fallback.items():
+        if code not in titles:
+            titles[code] = label.title()
+    return titles
+
+
+ISCO_TITLES: dict[str, str] = _build_isco_titles()
 
 
 def _confidence_value(c: Any) -> float:

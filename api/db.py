@@ -62,6 +62,16 @@ CREATE TABLE IF NOT EXISTS profile_opportunities (
 
 CREATE INDEX IF NOT EXISTS idx_profile_opportunities_profile ON profile_opportunities(profile_id);
 CREATE INDEX IF NOT EXISTS idx_profile_opportunities_sector ON profile_opportunities(sector);
+
+CREATE TABLE IF NOT EXISTS telegram_sessions (
+    chat_id INTEGER PRIMARY KEY,
+    messages TEXT NOT NULL DEFAULT '[]',
+    collected_data TEXT,
+    profile_id TEXT,
+    country_code TEXT NOT NULL DEFAULT 'GH',
+    language TEXT NOT NULL DEFAULT 'en',
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 """
 
 

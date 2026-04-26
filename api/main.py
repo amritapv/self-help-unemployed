@@ -276,6 +276,84 @@ async def meta_countries():
     return {"countries": out}
 
 
+@app.get("/admin/countries/template")
+async def admin_country_template(reference: str = "GH"):
+    """Return an example country block (defaults to Ghana) so policymakers can
+    copy, edit, and POST it back. Used by the onboarding instructions page."""
+    countries_path = DATA_DIR / "countries.json"
+    with open(countries_path) as f:
+        countries = json.load(f)
+    if reference not in countries:
+        raise HTTPException(status_code=404, detail=f"No reference country '{reference}'")
+    return countries[reference]
+
+
+@app.post("/admin/countries")
+async def admin_upsert_country(country: dict):
+    """Onboard a new country (or update an existing one) by POSTing its config block.
+
+    Required top-level fields: country_code, country_name, language, currency,
+    regions, sectors, wage_data, automation_calibration, opportunity_types,
+    education_taxonomy, demographics. Anything else is preserved.
+
+    The block is merged into data/countries.json (atomic write via temp file).
+    All endpoints pick it up on the next request — no restart needed.
+    """
+    REQUIRED = [
+        "country_code", "country_name", "language", "currency", "regions",
+        "sectors", "wage_data", "automation_calibration", "opportunity_types",
+        "education_taxonomy", "demographics",
+    ]
+    missing = [k for k in REQUIRED if k not in country]
+    if missing:
+        raise HTTPException(status_code=400, detail={
+            "error": "missing required fields",
+            "missing": missing,
+        })
+
+    code = country.get("country_code", "")
+    if not (isinstance(code, str) and len(code) == 2 and code.isalpha() and code.isupper()):
+        raise HTTPException(status_code=400, detail={
+            "error": "country_code must be a 2-letter uppercase ISO 3166-1 alpha-2 code",
+            "received": code,
+        })
+
+    # Soft validation: warn if any wage_data ISCO has no Frey-Osborne entry
+    # (risk_engine has a major-group fallback, so it's a warning, not an error).
+    warnings: list[str] = []
+    fo = load_frey_osborne()
+    for isco in country.get("wage_data", {}):
+        if isco.startswith("_"):
+            continue
+        if isco not in fo:
+            major = isco[:1]
+            siblings = [k for k in fo if not k.startswith("_") and k.startswith(major)]
+            if not siblings:
+                warnings.append(
+                    f"ISCO {isco}: no automation data and no fallback in major group {major} — "
+                    "automation_risk for this occupation will be 'unknown'"
+                )
+
+    # Atomic upsert: read, mutate, write to .tmp, replace
+    countries_path = DATA_DIR / "countries.json"
+    with open(countries_path) as f:
+        countries = json.load(f)
+    action = "updated" if code in countries else "created"
+    countries[code] = country
+
+    tmp_path = countries_path.with_suffix(".json.tmp")
+    with open(tmp_path, "w") as f:
+        json.dump(countries, f, indent=2)
+    tmp_path.replace(countries_path)
+
+    return {
+        "success": True,
+        "country_code": code,
+        "action": action,
+        "warnings": warnings,
+    }
+
+
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     """

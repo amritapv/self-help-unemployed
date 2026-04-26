@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { TEST_PERSONAS, matchTestCommand, formatPersonaBio } from './testPersonas'
 import { t } from './i18n'
 
 const API_URL = 'http://localhost:8000'
@@ -175,21 +174,6 @@ function ChatView({ country, language, onProfileComplete }) {
 
   const handleSend = async () => {
     if (!input.trim() || loading) return
-
-    // Hotkey: "Test: Amara" / "Test: Bern" / "Test: Cal" — skip the chat, run the chain directly.
-    const persona = matchTestCommand(input)
-    if (persona) {
-      const userMessage = { role: 'user', content: input.trim() }
-      setMessages(prev => [
-        ...prev,
-        userMessage,
-        { role: 'assistant', content: formatPersonaBio(persona) },
-      ])
-      setInput('')
-      const { country_code, ...collected } = persona.payload
-      await runAssessment({ collected, country_code })
-      return
-    }
 
     const userMessage = { role: 'user', content: input }
     const newMessages = [...messages, userMessage]
