@@ -286,8 +286,8 @@
         {"skill": "Hybrid vehicle repair", "why": "Newer vehicles increasingly common in Greater Accra"}
       ],
       "automation_pace_note": "Slower than high-income countries. The cost of installing automation in informal Ghanaian trades is high, and skilled hands are still cheaper than imported machines.",
-      "horizon_years_urban": 20,
-      "horizon_years_rural": 20,
+      "horizon_years_urban": 8,
+      "horizon_years_rural": 15,
       "tone_register": "warm and respectful; everyday English; affirmations like 'eh' or 'oh' are fine in informal contexts",
       "money_anchor_phrase": "GHS per month"
     }
@@ -569,8 +569,8 @@
         {"skill": "Smartphone software troubleshooting", "why": "Hundreds of millions of new smartphones each year creates steady repair work"}
       ],
       "automation_pace_note": "Faster in tier-1 cities. Smaller towns and rural areas see automation arrive much more slowly.",
-      "horizon_years_urban": 20,
-      "horizon_years_rural": 20,
+      "horizon_years_urban": 5,
+      "horizon_years_rural": 12,
       "tone_register": "encouraging and direct; English is fine for technical terms but plain language for everything else",
       "money_anchor_phrase": "INR per month"
     }
