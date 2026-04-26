@@ -17,6 +17,7 @@ from api.opportunity_engine import match_opportunities
 from api.report_engine import generate_report
 from api.gap_taxonomy import classify_batch as classify_gaps
 from api import repository
+from api.platform_config import language_name as _language_name_shared
 
 app = FastAPI(
     title="UNMAPPED API",
@@ -41,18 +42,9 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 # Pydantic Models
 # ============================================================================
 
-LANGUAGE_NAMES = {
-    "en": "English",
-    "hi": "Hindi",
-    "es": "Spanish",
-    "ar": "Arabic",
-    "fr": "French",
-}
-
-
-def _language_name(code: str) -> str:
-    """Map a language code to its English name. Falls back to English silently."""
-    return LANGUAGE_NAMES.get((code or "en").lower(), "English")
+# Language map sourced from data/platform_config.json — single source of truth.
+# Adding a language is JSON-only.
+_language_name = _language_name_shared
 
 
 class SkillsAssessmentRequest(BaseModel):

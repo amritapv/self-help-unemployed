@@ -28,20 +28,13 @@ from pathlib import Path
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
+from api.platform_config import (
+    language_name as _language_name,
+    sector_translations,
+    opportunity_type_metadata,
+)
+
 MODEL = "claude-sonnet-4-20250514"
-
-_LANGUAGE_NAMES = {
-    "en": "English",
-    "hi": "Hindi",
-    "es": "Spanish",
-    "ar": "Arabic",
-    "fr": "French",
-}
-
-
-def _language_name(code: str) -> str:
-    """Map a language code to its English name. Falls back to English silently."""
-    return _LANGUAGE_NAMES.get((code or "en").lower(), "English")
 
 # Curated, demo-friendly titles for the ISCO codes we shipped first. Anything not
 # in here falls back to the ESCO/ISCO taxonomy file so newly-onboarded countries
@@ -227,6 +220,22 @@ def _build_prompt(
         for tp in country_config.get("training_pathways", [])
     ]
 
+    # Sector slug -> friendly noun phrase, sourced from data/platform_config.json
+    # so adding a new slug or relabelling is JSON-only.
+    sector_xlate = sector_translations("en")
+    sector_xlate_lines = [
+        f"  - '{slug}' -> '{phrase}'"
+        for slug, phrase in sector_xlate.items()
+    ]
+
+    # Per-country opportunity types — drives the matcher's `opportunity_type`
+    # enum. Falls back to all-known-types if the country didn't list any.
+    allowed_types = (
+        country_config.get("opportunity_types")
+        or list(opportunity_type_metadata().keys())
+    )
+    opp_types_str = " | ".join(allowed_types)
+
     system = f"""You are UNMAPPED's opportunity matcher. You produce 3-5 honest, realistic job recommendations for a young person in a low- or middle-income country.
 
 # Country context: {country_config['country_name']} ({country_config['country_code']})
@@ -256,10 +265,10 @@ Return JSON with this exact shape — nothing else, no markdown fences:
   "opportunities": [
     {{
       "title": "Plain-language role title (e.g., 'Mobile Device Technician')",
-      "opportunity_type": "formal_employment | self_employment | gig | apprenticeship | training_pathway",
+      "opportunity_type": "{opp_types_str}",
       "employer_or_path": "An employer name OR the path (e.g., 'Self-employment in your neighbourhood')",
       "wage_range": "Wage as a range with the floor (minimum) on the low end and the high end clearly framed. Cite the candidate's wage_min and wage_max verbatim. Format: '<currency> <floor> (starting) – <high> (high end) /month'. Example: 'GHS 1,800 (starting) – 2,400 (high end) /month'. Always show both ends.",
-      "sector_growth": "Friendly, non-technical description of how this job's sector is growing — for someone with no business or economics vocabulary. NO jargon (avoid words like 'ICT', 'CAGR', 'sector growth rate'). Translate sector slugs to everyday words: 'ict' -> 'tech and digital jobs', 'renewable_energy' -> 'solar and renewable energy', 'services' -> 'services and repair work', 'manufacturing' -> 'factory and manufacturing work', 'agriculture' -> 'farming', 'construction' -> 'building and construction', 'retail' -> 'shops and selling', 'finance' -> 'banking', 'healthcare' -> 'health and care work', 'education' -> 'teaching'. Cite the candidate's sector_growth_pct number verbatim. Example: 'Tech and digital jobs are growing fast — about 14% more work each year.' or 'Mobile repair and services have steady demand, with about 6% more work each year.'",
+      "sector_growth": "Friendly, non-technical description of how this job's sector is growing — for someone with no business or economics vocabulary. NO jargon (avoid 'ICT', 'CAGR', 'sector growth rate'). Translate sector slugs to everyday words using this table:\\n{chr(10).join(sector_xlate_lines)}\\nCite the candidate's sector_growth_pct number verbatim. Example: 'Tech and digital jobs are growing fast — about 14% more work each year.' or 'Mobile repair and services have steady demand, with about 6% more work each year.'",
       "fit_explanation": "ONE short, conversational sentence (15-25 words). Talk like a friend giving honest advice. Use contractions and everyday words. Cite the user's actual skills naturally. Examples of the right tone: 'Your phone-repair chops carry straight over here — you already know what most of the day looks like.' or 'You're not far off — the soldering and circuit work map nicely, you'd just need to learn solar wiring.' AVOID: 'Your skills translate well to', 'demonstrates strong alignment', 'leverages your background'.",
       "skill_gap": "What the user is missing (or null if no gap). Casual phrasing — 'You'll need a solar cert' not 'Lacks certification in photovoltaic systems'.",
       "next_step": "One concrete action, casual and direct — 'Sign up for the free Energy Commission solar course (it's 2 weeks)' or 'Walk into the NVTI office and ask about the Q3 intake'. Must reference a pathway ID by name when applicable."
@@ -271,7 +280,7 @@ Return JSON with this exact shape — nothing else, no markdown fences:
 # LANGUAGE
 Respond in {_language_name(language)}. Specifically:
 - title, employer_or_path, wage_range, sector_growth, fit_explanation, skill_gap, next_step, note: write in {_language_name(language)}.
-- opportunity_type: keep as one of the English enum values exactly: formal_employment | self_employment | gig | apprenticeship | training_pathway.
+- opportunity_type: keep as one of the English enum values exactly: {opp_types_str}.
 - isco_code values, training_pathway IDs (e.g., nvti_solar_2wk), and currency codes (e.g., GHS, INR) referenced inline: keep verbatim — they are identifiers.
 - Numeric values cited from the candidates list (wages, growth percentages): keep verbatim."""
 

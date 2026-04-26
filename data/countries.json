@@ -574,5 +574,303 @@
       "tone_register": "encouraging and direct; English is fine for technical terms but plain language for everything else",
       "money_anchor_phrase": "INR per month"
     }
+  },
+  "MX": {
+    "country_code": "MX",
+    "country_name": "Mexico",
+    "context": "Upper-middle-income North American country with a large auto/electronics manufacturing base, growing tech corridors in Guadalajara/Monterrey, and a substantial informal economy in services and street commerce.",
+    "language": {
+      "primary": "es",
+      "secondary": "en",
+      "local": ["nah", "yua", "may"]
+    },
+    "currency": {
+      "code": "MXN",
+      "symbol": "Mex$",
+      "name": "Mexican Peso"
+    },
+    "regions": [
+      { "code": "cdmx",        "name": "Mexico City (CDMX)",       "type": "urban_metro" },
+      { "code": "nuevo_leon",  "name": "Nuevo León",                "type": "industrial_metro" },
+      { "code": "jalisco",     "name": "Jalisco (Guadalajara)",     "type": "ict_metro" },
+      { "code": "oaxaca",      "name": "Oaxaca",                    "type": "rural_ag" },
+      { "code": "chiapas",     "name": "Chiapas",                   "type": "rural_ag" }
+    ],
+    "education_taxonomy": [
+      { "local": "Secundaria",                  "isced": "2", "label": "Lower secondary (Grade 7-9)" },
+      { "local": "Bachillerato/Preparatoria",   "isced": "3", "label": "Upper secondary" },
+      { "local": "Técnico Superior Universitario", "isced": "5", "label": "Short-cycle tertiary (technical)" },
+      { "local": "Licenciatura",                "isced": "6", "label": "Bachelor's degree" },
+      { "local": "Maestría",                    "isced": "7", "label": "Master's degree" }
+    ],
+    "automation_calibration": {
+      "infrastructure_factor": 0.85,
+      "rationale": "Closer to high-income economies than most LMICs — automotive plants and tier-1 cities adopt automation quickly. Frey-Osborne raw scores discounted only 15%.",
+      "applies_to": "all values in frey_osborne.json"
+    },
+    "opportunity_types": [
+      "formal_employment",
+      "self_employment",
+      "gig",
+      "apprenticeship",
+      "training_pathway"
+    ],
+    "sectors": {
+      "ict":              { "growth_annual": 0.10,  "share_employment": 0.05, "informal_share": 0.30 },
+      "renewable_energy": { "growth_annual": 0.20,  "share_employment": 0.005, "informal_share": 0.30 },
+      "manufacturing":    { "growth_annual": 0.04,  "share_employment": 0.16, "informal_share": 0.35 },
+      "services":         { "growth_annual": 0.06,  "share_employment": 0.42, "informal_share": 0.55 },
+      "agriculture":      { "growth_annual": 0.025, "share_employment": 0.13, "informal_share": 0.85 },
+      "construction":     { "growth_annual": 0.05,  "share_employment": 0.08, "informal_share": 0.65 },
+      "retail":           { "growth_annual": 0.04,  "share_employment": 0.18, "informal_share": 0.55 },
+      "finance":          { "growth_annual": 0.07,  "share_employment": 0.03, "informal_share": 0.10 },
+      "healthcare":       { "growth_annual": 0.06,  "share_employment": 0.04, "informal_share": 0.30 },
+      "education":        { "growth_annual": 0.04,  "share_employment": 0.05, "informal_share": 0.20 }
+    },
+    "wage_data": {
+      "_unit": "MXN per month",
+      "_source": "Composite estimate (INEGI ENOE + ILOSTAT EAR_4MTH 2024). Approximate; refine with country-statistics-office data before production.",
+      "2519": { "min": 18000, "max": 50000, "median": 28000, "sector": "ict" },
+      "3512": { "min": 12000, "max": 22000, "median": 16000, "sector": "ict" },
+      "3514": { "min": 14000, "max": 28000, "median": 20000, "sector": "ict" },
+      "7421": { "min":  8000, "max": 15000, "median": 11000, "sector": "services" },
+      "7411": { "min":  9000, "max": 18000, "median": 13000, "sector": "construction" },
+      "7412": { "min":  8500, "max": 16000, "median": 12000, "sector": "manufacturing" },
+      "5223": { "min":  6000, "max": 12000, "median":  9000, "sector": "retail" },
+      "9520": { "min":  4500, "max":  9000, "median":  6500, "sector": "retail" },
+      "9211": { "min":  4000, "max":  7500, "median":  5500, "sector": "agriculture" },
+      "6111": { "min":  5500, "max": 10000, "median":  7500, "sector": "agriculture" },
+      "7115": { "min":  8000, "max": 14000, "median": 11000, "sector": "construction" },
+      "5311": { "min":  6500, "max": 11000, "median":  8500, "sector": "education" },
+      "4110": { "min":  9000, "max": 16000, "median": 12000, "sector": "services" }
+    },
+    "demographics": {
+      "youth_unemployment_rate": 0.07,
+      "informality_rate": 0.55,
+      "youth_pop_share": 0.16,
+      "median_age": 30.5,
+      "urbanization_rate": 0.81
+    },
+    "training_pathways": [
+      { "id": "conalep_2yr",   "name": "CONALEP technical track (2 years, free)", "duration_weeks": 96, "cost_local": 0,    "leads_to_isco": ["7411", "7412", "7421", "3512"] },
+      { "id": "icati_3mo",     "name": "ICATI short skills training",              "duration_weeks": 12, "cost_local": 0,    "leads_to_isco": ["7421", "7411"] },
+      { "id": "jcf_1yr",       "name": "Jóvenes Construyendo el Futuro apprenticeship", "duration_weeks": 52, "cost_local": 0, "leads_to_isco": ["5223", "7115", "7421"] }
+    ],
+    "localization": {
+      "self_service_examples": [
+        "Self-checkout kiosks in OXXO and Walmart",
+        "Cashless payments at small shops via SPEI/CoDi",
+        "Self-service gas at PEMEX stations"
+      ],
+      "peer_trades_steady": ["electricians", "plumbers", "tailors", "mechanics"],
+      "growth_pivots": [
+        {"skill": "EV battery and assembly work", "why": "EV plant boom across Bajío and Nuevo León"},
+        {"skill": "Solar PV installation",         "why": "Sonora plan + rooftop solar incentives"},
+        {"skill": "Bilingual customer support",    "why": "Nearshoring outsourcing pulling thousands of roles to Mexico from the US"}
+      ],
+      "automation_pace_note": "Faster than most LMICs — automotive plants and tier-1 cities adopt automation quickly. Smaller cities and rural areas lag noticeably.",
+      "horizon_years_urban": 6,
+      "horizon_years_rural": 12,
+      "tone_register": "warm and direct; address the user as 'tú' (not 'usted'); some informal Mexican Spanish ('chambear', 'echar la mano') is fine in casual contexts",
+      "money_anchor_phrase": "MXN per month"
+    }
+  },
+  "PH": {
+    "country_code": "PH",
+    "country_name": "Philippines",
+    "context": "Southeast Asian archipelago with a massive overseas-worker (OFW) economy and a large BPO/call-center sector. English literacy is high. Agriculture and informal services support most rural workers; remittances buffer many households.",
+    "language": {
+      "primary": "en",
+      "secondary": "fil",
+      "local": ["fil", "tl", "ceb", "ilo", "hil"]
+    },
+    "currency": {
+      "code": "PHP",
+      "symbol": "₱",
+      "name": "Philippine Peso"
+    },
+    "regions": [
+      { "code": "ncr",          "name": "National Capital Region (Metro Manila)", "type": "urban_metro" },
+      { "code": "calabarzon",   "name": "CALABARZON",                              "type": "industrial_mixed" },
+      { "code": "central_luzon","name": "Central Luzon",                           "type": "industrial_mixed" },
+      { "code": "visayas",      "name": "Visayas",                                 "type": "rural_coastal" },
+      { "code": "mindanao",     "name": "Mindanao",                                "type": "rural_ag" }
+    ],
+    "education_taxonomy": [
+      { "local": "Junior High (Grade 7-10)", "isced": "2", "label": "Lower secondary" },
+      { "local": "Senior High (Grade 11-12)","isced": "3", "label": "Upper secondary" },
+      { "local": "TESDA NC II/III",          "isced": "5", "label": "Short-cycle tertiary (TVET)" },
+      { "local": "Bachelor's",               "isced": "6", "label": "Bachelor's degree" }
+    ],
+    "automation_calibration": {
+      "infrastructure_factor": 0.7,
+      "rationale": "Mixed — Manila and Cebu adopt fast (BPO automation, fintech), provincial areas lag. Frey-Osborne raw scores discounted 30%.",
+      "applies_to": "all values in frey_osborne.json"
+    },
+    "opportunity_types": [
+      "formal_employment",
+      "self_employment",
+      "gig",
+      "apprenticeship",
+      "training_pathway",
+      "overseas_employment"
+    ],
+    "sectors": {
+      "ict":              { "growth_annual": 0.15,  "share_employment": 0.04, "informal_share": 0.30 },
+      "renewable_energy": { "growth_annual": 0.18,  "share_employment": 0.005, "informal_share": 0.30 },
+      "manufacturing":    { "growth_annual": 0.05,  "share_employment": 0.08, "informal_share": 0.40 },
+      "services":         { "growth_annual": 0.07,  "share_employment": 0.58, "informal_share": 0.65 },
+      "agriculture":      { "growth_annual": 0.02,  "share_employment": 0.23, "informal_share": 0.85 },
+      "construction":     { "growth_annual": 0.06,  "share_employment": 0.09, "informal_share": 0.65 },
+      "retail":           { "growth_annual": 0.05,  "share_employment": 0.15, "informal_share": 0.70 },
+      "finance":          { "growth_annual": 0.06,  "share_employment": 0.02, "informal_share": 0.10 },
+      "healthcare":       { "growth_annual": 0.07,  "share_employment": 0.03, "informal_share": 0.35 },
+      "education":        { "growth_annual": 0.04,  "share_employment": 0.04, "informal_share": 0.20 }
+    },
+    "wage_data": {
+      "_unit": "PHP per month",
+      "_source": "Composite estimate (PSA Labour Force Survey 2024 + ILOSTAT EAR_4MTH). BPO segment inflates 3512 above the typical ICT-support range.",
+      "2519": { "min": 25000, "max": 60000, "median": 38000, "sector": "ict" },
+      "3512": { "min": 18000, "max": 32000, "median": 24000, "sector": "ict" },
+      "3514": { "min": 22000, "max": 45000, "median": 30000, "sector": "ict" },
+      "7421": { "min": 12000, "max": 22000, "median": 16000, "sector": "services" },
+      "7411": { "min": 13000, "max": 25000, "median": 18000, "sector": "construction" },
+      "7412": { "min": 12000, "max": 22000, "median": 16500, "sector": "manufacturing" },
+      "5223": { "min": 11000, "max": 18000, "median": 14000, "sector": "retail" },
+      "9520": { "min":  6000, "max": 15000, "median":  9000, "sector": "retail" },
+      "9211": { "min":  5500, "max": 10000, "median":  7500, "sector": "agriculture" },
+      "6111": { "min":  8000, "max": 14000, "median": 10500, "sector": "agriculture" },
+      "7115": { "min": 11000, "max": 20000, "median": 15000, "sector": "construction" },
+      "5311": { "min":  9000, "max": 15000, "median": 11500, "sector": "education" },
+      "4110": { "min": 14000, "max": 24000, "median": 18000, "sector": "services" }
+    },
+    "demographics": {
+      "youth_unemployment_rate": 0.075,
+      "informality_rate": 0.78,
+      "youth_pop_share": 0.20,
+      "median_age": 25.7,
+      "urbanization_rate": 0.48
+    },
+    "training_pathways": [
+      { "id": "tesda_nc2_chs_6mo", "name": "TESDA Computer Hardware Servicing NC II", "duration_weeks": 24, "cost_local": 0,    "leads_to_isco": ["7421", "3512"] },
+      { "id": "tesda_pv_3mo",      "name": "TESDA Solar Photovoltaic Systems Installation NC III", "duration_weeks": 12, "cost_local": 0, "leads_to_isco": ["7411"] },
+      { "id": "dict_bpo_3mo",      "name": "DICT BPO foundation training (free)",   "duration_weeks": 12, "cost_local": 0,    "leads_to_isco": ["3512", "4110"] }
+    ],
+    "localization": {
+      "self_service_examples": [
+        "GCash and Maya replacing cash counters at sari-sari stores",
+        "Self-checkout in SM and Robinsons hypermarkets",
+        "Online food orders via Foodpanda/GrabFood replacing some carinderia walk-ins"
+      ],
+      "peer_trades_steady": ["electricians", "carpenters", "tailors", "barbers"],
+      "growth_pivots": [
+        {"skill": "BPO/call-center foundation skills", "why": "BPO is one of the country's biggest formal-employment sectors and hires entry-level English speakers"},
+        {"skill": "Solar PV installation",             "why": "DOE pushing rooftop and barangay-level solar across the country"},
+        {"skill": "OFW skills certification (TESDA NC)", "why": "Opens overseas placements with better wages and protections"}
+      ],
+      "automation_pace_note": "Manila and Cebu adopt fast (BPO automation, fintech). Provincial areas lag noticeably; the remittance economy buffers many households against displacement.",
+      "horizon_years_urban": 7,
+      "horizon_years_rural": 14,
+      "tone_register": "warm and casual; English with some Tagalog mixing (Taglish) is natural; address the user directly without honorifics",
+      "money_anchor_phrase": "PHP per month"
+    }
+  },
+  "CO": {
+    "country_code": "CO",
+    "country_name": "Colombia",
+    "context": "South American Andean country. Coffee, services, and finance hub (Bogotá, Medellín, Cali). Strong informal economy. Free public training is widely available through SENA.",
+    "language": {
+      "primary": "es",
+      "local": []
+    },
+    "currency": {
+      "code": "COP",
+      "symbol": "Col$",
+      "name": "Colombian Peso"
+    },
+    "regions": [
+      { "code": "bogota",          "name": "Bogotá D.C.",          "type": "urban_metro" },
+      { "code": "antioquia",       "name": "Antioquia (Medellín)", "type": "industrial_metro" },
+      { "code": "valle_del_cauca", "name": "Valle del Cauca (Cali)", "type": "industrial_mixed" },
+      { "code": "atlantico",       "name": "Atlántico (Barranquilla)", "type": "coastal_industrial" },
+      { "code": "boyaca",          "name": "Boyacá",                "type": "rural_ag" }
+    ],
+    "education_taxonomy": [
+      { "local": "Educación Básica",  "isced": "2", "label": "Lower secondary (Grade 6-9)" },
+      { "local": "Bachiller/Bachillerato", "isced": "3", "label": "Upper secondary" },
+      { "local": "Técnico/Tecnólogo (SENA)", "isced": "5", "label": "Short-cycle tertiary (technical/technological)" },
+      { "local": "Profesional",       "isced": "6", "label": "Bachelor's degree" }
+    ],
+    "automation_calibration": {
+      "infrastructure_factor": 0.7,
+      "rationale": "Bogotá and Medellín adopt fast; smaller cities and rural areas lag. Frey-Osborne raw scores discounted 30%.",
+      "applies_to": "all values in frey_osborne.json"
+    },
+    "opportunity_types": [
+      "formal_employment",
+      "self_employment",
+      "gig",
+      "apprenticeship",
+      "training_pathway"
+    ],
+    "sectors": {
+      "ict":              { "growth_annual": 0.12,  "share_employment": 0.04, "informal_share": 0.40 },
+      "renewable_energy": { "growth_annual": 0.18,  "share_employment": 0.005, "informal_share": 0.30 },
+      "manufacturing":    { "growth_annual": 0.04,  "share_employment": 0.12, "informal_share": 0.45 },
+      "services":         { "growth_annual": 0.06,  "share_employment": 0.42, "informal_share": 0.62 },
+      "agriculture":      { "growth_annual": 0.02,  "share_employment": 0.16, "informal_share": 0.85 },
+      "construction":     { "growth_annual": 0.05,  "share_employment": 0.07, "informal_share": 0.65 },
+      "retail":           { "growth_annual": 0.04,  "share_employment": 0.18, "informal_share": 0.55 },
+      "finance":          { "growth_annual": 0.07,  "share_employment": 0.03, "informal_share": 0.10 },
+      "healthcare":       { "growth_annual": 0.06,  "share_employment": 0.04, "informal_share": 0.30 },
+      "education":        { "growth_annual": 0.04,  "share_employment": 0.04, "informal_share": 0.20 }
+    },
+    "wage_data": {
+      "_unit": "COP per month",
+      "_source": "Composite estimate (DANE GEIH + ILOSTAT EAR_4MTH 2024). 2024 minimum wage anchors most low-skill ranges (~1,300,000 COP/mo).",
+      "2519": { "min": 3500000, "max": 9000000, "median": 5500000, "sector": "ict" },
+      "3512": { "min": 2000000, "max": 4500000, "median": 3000000, "sector": "ict" },
+      "3514": { "min": 2400000, "max": 5500000, "median": 3500000, "sector": "ict" },
+      "7421": { "min": 1200000, "max": 2500000, "median": 1700000, "sector": "services" },
+      "7411": { "min": 1300000, "max": 2700000, "median": 1900000, "sector": "construction" },
+      "7412": { "min": 1300000, "max": 2400000, "median": 1800000, "sector": "manufacturing" },
+      "5223": { "min": 1100000, "max": 1800000, "median": 1400000, "sector": "retail" },
+      "9520": { "min":  800000, "max": 1500000, "median": 1100000, "sector": "retail" },
+      "9211": { "min":  900000, "max": 1300000, "median": 1100000, "sector": "agriculture" },
+      "6111": { "min": 1000000, "max": 1700000, "median": 1300000, "sector": "agriculture" },
+      "7115": { "min": 1200000, "max": 2300000, "median": 1700000, "sector": "construction" },
+      "5311": { "min": 1100000, "max": 1700000, "median": 1300000, "sector": "education" },
+      "4110": { "min": 1500000, "max": 2700000, "median": 2000000, "sector": "services" }
+    },
+    "demographics": {
+      "youth_unemployment_rate": 0.18,
+      "informality_rate": 0.59,
+      "youth_pop_share": 0.18,
+      "median_age": 31.2,
+      "urbanization_rate": 0.81
+    },
+    "training_pathways": [
+      { "id": "sena_tecnico_2yr",       "name": "SENA Técnico track (2 years, free)",      "duration_weeks": 96, "cost_local": 0, "leads_to_isco": ["7421", "7412", "7411", "3512"] },
+      { "id": "sena_complementario_2mo","name": "SENA Complementario short courses (free)", "duration_weeks":  8, "cost_local": 0, "leads_to_isco": ["5223", "7115", "7421"] },
+      { "id": "sena_solar_3mo",         "name": "SENA solar PV installation course",       "duration_weeks": 12, "cost_local": 0, "leads_to_isco": ["7411"] }
+    ],
+    "localization": {
+      "self_service_examples": [
+        "Self-checkout in Éxito and D1 stores",
+        "Nequi/Daviplata replacing cash for street commerce",
+        "Self-service fuel at some Terpel stations"
+      ],
+      "peer_trades_steady": ["electricians", "plumbers", "tailors", "carpenters"],
+      "growth_pivots": [
+        {"skill": "Solar PV installation (free SENA course)", "why": "Government renewable-energy push + corporate rooftop boom"},
+        {"skill": "Bilingual BPO/contact-center work in Bogotá or Medellín", "why": "English fluency multiplies salary 2-3x in BPO roles"},
+        {"skill": "Software development",                     "why": "Tech talent shortage; English fluency is the main multiplier"}
+      ],
+      "automation_pace_note": "Bogotá and Medellín adopt fast; smaller cities and rural areas lag. Informality remains a major buffer.",
+      "horizon_years_urban": 7,
+      "horizon_years_rural": 14,
+      "tone_register": "warm; address the user as 'tú' (not 'usted') for the youth audience; some Colombian slang ('chévere', 'parcero') is fine in informal contexts",
+      "money_anchor_phrase": "COP per month"
+    }
   }
 }

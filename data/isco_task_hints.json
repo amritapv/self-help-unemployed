@@ -1,0 +1,156 @@
+{
+  "_meta": {
+    "schema_version": "0.1.0",
+    "description": "Per-ISCO 'what machines do well' vs 'what still needs a human' hints. Used by Module 02 risk_engine. Curated; expand by adding more 4-digit ISCO entries.",
+    "last_updated": "2026-04-25",
+    "key": "ISCO-08 4-digit code"
+  },
+  "2519": {
+    "machines_handle": [
+      "Boilerplate code generation",
+      "Routine bug fixing on common stacks",
+      "Simple website setup from templates"
+    ],
+    "still_needs_you": [
+      "Designing systems that fit a real business",
+      "Translating what users say into what code should do",
+      "Picking up new tools and libraries on your own"
+    ]
+  },
+  "3512": {
+    "machines_handle": [
+      "Password resets and access requests",
+      "First-line ticket triage and FAQs",
+      "Basic software installations from a script"
+    ],
+    "still_needs_you": [
+      "Hands-on hardware troubleshooting",
+      "Onsite user training and walkthroughs",
+      "Multi-language user support"
+    ]
+  },
+  "3514": {
+    "machines_handle": [
+      "Routine site monitoring and uptime alerts",
+      "Standard security patching"
+    ],
+    "still_needs_you": [
+      "Diagnosing strange site failures",
+      "Working with content teams on publishing workflows",
+      "Customising configurations for the business"
+    ]
+  },
+  "4110": {
+    "machines_handle": [
+      "Data entry and form processing",
+      "Filing and document scanning",
+      "Routine appointment scheduling"
+    ],
+    "still_needs_you": [
+      "Handling unusual customer requests",
+      "Managing relationships across teams",
+      "Spotting errors that the system misses"
+    ]
+  },
+  "5223": {
+    "machines_handle": [
+      "Cashier-style checkout",
+      "Inventory counting and stock alerts",
+      "Promotional pop-ups and price tags"
+    ],
+    "still_needs_you": [
+      "Persuasive selling and matching products to needs",
+      "Building relationships with regular customers",
+      "In-store troubleshooting and product demos"
+    ]
+  },
+  "5311": {
+    "machines_handle": [
+      "Basic activity scheduling apps",
+      "Simple safety reminders and timers"
+    ],
+    "still_needs_you": [
+      "Calming and engaging children directly",
+      "Reading what each child needs in the moment",
+      "Talking with parents about their child's day"
+    ]
+  },
+  "6111": {
+    "machines_handle": [
+      "Routine soil-moisture sensing and irrigation timing",
+      "Crop yield estimates from basic image data"
+    ],
+    "still_needs_you": [
+      "Reading weather and acting fast",
+      "Spotting early signs of pests or disease",
+      "Managing labour during harvest"
+    ]
+  },
+  "7115": {
+    "machines_handle": [
+      "Pre-cut, pre-drilled component panels",
+      "Routine measurement and marking"
+    ],
+    "still_needs_you": [
+      "Fitting work to imperfect walls and floors",
+      "Making custom pieces for unusual spaces",
+      "Reading what the customer actually wants"
+    ]
+  },
+  "7411": {
+    "machines_handle": [
+      "Routine wiring inspections with handheld testers",
+      "Standard fixture installations from kits"
+    ],
+    "still_needs_you": [
+      "Solar PV installation",
+      "On-site fault diagnosis when something is wired wrong",
+      "Code-compliance work and customer trust"
+    ]
+  },
+  "7412": {
+    "machines_handle": [
+      "Standard motor-assembly steps in factories",
+      "Routine equipment testing"
+    ],
+    "still_needs_you": [
+      "Diagnosing why a machine keeps failing",
+      "Repairing older or non-standard equipment",
+      "Training new staff on the floor"
+    ]
+  },
+  "7421": {
+    "machines_handle": [
+      "Routine diagnostic checks via scanners",
+      "Standard screen replacements",
+      "Basic battery swaps"
+    ],
+    "still_needs_you": [
+      "Complex circuit-level repair",
+      "Talking to customers and explaining what's wrong",
+      "Teaching apprentices how to fix things"
+    ]
+  },
+  "9211": {
+    "machines_handle": [
+      "Mechanical sowing and harvesting on flat fields",
+      "Basic spraying with drone equipment"
+    ],
+    "still_needs_you": [
+      "Hand-picking delicate crops",
+      "Working terrain machines can't reach",
+      "Sorting and grading produce by feel"
+    ]
+  },
+  "9520": {
+    "machines_handle": [
+      "Online price comparison apps",
+      "Some online ordering replacing impulse street buys"
+    ],
+    "still_needs_you": [
+      "Reading what catches a customer's eye",
+      "Negotiating prices on the spot",
+      "Building a regular customer base in your patch"
+    ]
+  }
+}
