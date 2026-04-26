@@ -5,31 +5,26 @@
     "last_updated": "2026-04-25"
   },
   "languages": {
-    "en": {
-      "name": "English",
-      "native": "English",
-      "rtl": false
-    },
-    "hi": {
-      "name": "Hindi",
-      "native": "हिन्दी",
-      "rtl": false
-    },
-    "es": {
-      "name": "Spanish",
-      "native": "Español",
-      "rtl": false
-    },
-    "ar": {
-      "name": "Arabic",
-      "native": "العربية",
-      "rtl": true
-    },
-    "fr": {
-      "name": "French",
-      "native": "Français",
-      "rtl": false
-    }
+    "en": { "name": "English",          "native": "English",          "rtl": false },
+    "zh": { "name": "Mandarin Chinese", "native": "中文",              "rtl": false },
+    "hi": { "name": "Hindi",            "native": "हिन्दी",              "rtl": false },
+    "es": { "name": "Spanish",          "native": "Español",          "rtl": false },
+    "fr": { "name": "French",           "native": "Français",         "rtl": false },
+    "ar": { "name": "Arabic",           "native": "العربية",            "rtl": true  },
+    "bn": { "name": "Bengali",          "native": "বাংলা",             "rtl": false },
+    "pt": { "name": "Portuguese",       "native": "Português",        "rtl": false },
+    "ru": { "name": "Russian",          "native": "Русский",          "rtl": false },
+    "ur": { "name": "Urdu",             "native": "اردو",              "rtl": true  },
+    "id": { "name": "Indonesian",       "native": "Bahasa Indonesia", "rtl": false },
+    "de": { "name": "German",           "native": "Deutsch",          "rtl": false },
+    "ja": { "name": "Japanese",         "native": "日本語",            "rtl": false },
+    "sw": { "name": "Swahili",          "native": "Kiswahili",        "rtl": false },
+    "mr": { "name": "Marathi",          "native": "मराठी",             "rtl": false },
+    "te": { "name": "Telugu",           "native": "తెలుగు",             "rtl": false },
+    "tr": { "name": "Turkish",          "native": "Türkçe",           "rtl": false },
+    "ta": { "name": "Tamil",            "native": "தமிழ்",              "rtl": false },
+    "vi": { "name": "Vietnamese",       "native": "Tiếng Việt",       "rtl": false },
+    "ko": { "name": "Korean",           "native": "한국어",            "rtl": false }
   },
   "verdict_thresholds": {
     "_description": "Boundaries for the automation-risk verdict bucket. score < mostly_safe_max -> mostly_safe; < watch_max -> watch; else act_now.",

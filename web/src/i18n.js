@@ -2,12 +2,31 @@
 // Adding a new language: append to LANGUAGES and add a key block in STRINGS.
 // `t(lang, key)` falls back to English when a key is missing in the target language.
 
+// Top-20 languages by total speakers. The first 5 ship with full UI
+// translations in STRINGS below; the others fall back to English UI
+// strings via t(). Sonnet still responds in the user's language for
+// dynamic content (greeting reply, opportunities, risk summary).
 export const LANGUAGES = [
-  { code: 'en', label: 'English', native: 'English' },
-  { code: 'hi', label: 'हिन्दी', native: 'हिन्दी (Hindi)' },
-  { code: 'es', label: 'Español', native: 'Español (Spanish)' },
-  { code: 'ar', label: 'العربية', native: 'العربية (Arabic)' },
-  { code: 'fr', label: 'Français', native: 'Français (French)' },
+  { code: 'en', label: 'English',     native: 'English',                    rtl: false },
+  { code: 'zh', label: '中文',         native: '中文 (Mandarin)',             rtl: false },
+  { code: 'hi', label: 'हिन्दी',        native: 'हिन्दी (Hindi)',              rtl: false },
+  { code: 'es', label: 'Español',     native: 'Español (Spanish)',          rtl: false },
+  { code: 'fr', label: 'Français',    native: 'Français (French)',          rtl: false },
+  { code: 'ar', label: 'العربية',      native: 'العربية (Arabic)',            rtl: true  },
+  { code: 'bn', label: 'বাংলা',       native: 'বাংলা (Bengali)',             rtl: false },
+  { code: 'pt', label: 'Português',   native: 'Português (Portuguese)',     rtl: false },
+  { code: 'ru', label: 'Русский',     native: 'Русский (Russian)',          rtl: false },
+  { code: 'ur', label: 'اردو',        native: 'اردو (Urdu)',                rtl: true  },
+  { code: 'id', label: 'Indonesian',  native: 'Bahasa Indonesia',           rtl: false },
+  { code: 'de', label: 'Deutsch',     native: 'Deutsch (German)',           rtl: false },
+  { code: 'ja', label: '日本語',       native: '日本語 (Japanese)',           rtl: false },
+  { code: 'sw', label: 'Kiswahili',   native: 'Kiswahili (Swahili)',        rtl: false },
+  { code: 'mr', label: 'मराठी',       native: 'मराठी (Marathi)',            rtl: false },
+  { code: 'te', label: 'తెలుగు',       native: 'తెలుగు (Telugu)',             rtl: false },
+  { code: 'tr', label: 'Türkçe',      native: 'Türkçe (Turkish)',           rtl: false },
+  { code: 'ta', label: 'தமிழ்',        native: 'தமிழ் (Tamil)',               rtl: false },
+  { code: 'vi', label: 'Tiếng Việt',  native: 'Tiếng Việt (Vietnamese)',    rtl: false },
+  { code: 'ko', label: '한국어',       native: '한국어 (Korean)',             rtl: false },
 ]
 
 export const STRINGS = {
@@ -173,5 +192,7 @@ export function t(lang, key) {
 }
 
 export function isRTL(lang) {
-  return lang === 'ar'
+  // Data-driven so adding another RTL language is just an entry in LANGUAGES.
+  const entry = LANGUAGES.find((l) => l.code === lang)
+  return !!entry?.rtl
 }
