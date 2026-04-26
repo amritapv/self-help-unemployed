@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { t } from './i18n'
 
-const API_URL = 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 // Web Speech API support check
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
