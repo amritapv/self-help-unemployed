@@ -12,13 +12,15 @@ function fmt(template, vars) {
   return template.replace(/\{(\w+)\}/g, (_, k) => (k in vars ? vars[k] : `{${k}}`))
 }
 
-function ChatView({ country, language, onProfileComplete }) {
+function ChatView({ country, language, onProfileComplete, onNavigate }) {
   const [messages, setMessages] = useState([
     { role: 'assistant', content: t(language, 'greeting') }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [collectedData, setCollectedData] = useState(null)
+  const [assessmentReady, setAssessmentReady] = useState(false)
+  const [hasOpportunities, setHasOpportunities] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [speechLang, setSpeechLang] = useState('en-US')
   const recognitionRef = useRef(null)
@@ -81,6 +83,8 @@ function ChatView({ country, language, onProfileComplete }) {
     }
     setMessages([{ role: 'assistant', content: t(language, 'greeting') }])
     setCollectedData(null)
+    setAssessmentReady(false)
+    setHasOpportunities(false)
     prevLangRef.current = language
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language])
@@ -137,6 +141,8 @@ function ChatView({ country, language, onProfileComplete }) {
         : (oppsData.note ? `${oppsData.note}` : t(language, 'noMatchFallback'))
 
       setMessages(prev => [...prev, { role: 'assistant', content: finalMessage }])
+      setAssessmentReady(!!profile)
+      setHasOpportunities(opportunities.length > 0)
       onProfileComplete?.({ profile, opportunities, country: country_code })
     } catch (error) {
       console.error('Assessment error:', error)
@@ -225,6 +231,26 @@ function ChatView({ country, language, onProfileComplete }) {
         {loading && (
           <div className="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-[85%]">
             <span className="animate-pulse">...</span>
+          </div>
+        )}
+
+        {/* Action buttons after the assessment lands — quick-jump to the dedicated screens. */}
+        {assessmentReady && !loading && onNavigate && (
+          <div className="flex flex-wrap gap-2 max-w-[85%]">
+            <button
+              onClick={() => onNavigate('skills')}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
+            >
+              See Skills Profile →
+            </button>
+            {hasOpportunities && (
+              <button
+                onClick={() => onNavigate('opps')}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700"
+              >
+                See Job Opportunities →
+              </button>
+            )}
           </div>
         )}
       </div>

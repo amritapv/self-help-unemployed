@@ -111,6 +111,7 @@ function App() {
                 setSkillsProfile(profile)
                 setOpportunities(opportunities || [])
               }}
+              onNavigate={setView}
             />
           </div>
           {view === 'skills' && skillsProfile && (
