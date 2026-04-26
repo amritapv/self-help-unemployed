@@ -15,6 +15,8 @@ from api.skills_engine import assess_skills
 from api.risk_engine import assess_automation_risk
 from api.opportunity_engine import match_opportunities
 from api.report_engine import generate_report
+from api.gap_taxonomy import classify_batch as classify_gaps
+from api import repository
 
 app = FastAPI(
     title="UNMAPPED API",
@@ -223,9 +225,33 @@ async def root():
             "chat": "POST /chat",
             "assess_skills": "POST /assess-skills",
             "match_opportunities": "POST /match-opportunities",
-            "report": "GET /report"
+            "report": "GET /report",
+            "meta_countries": "GET /meta/countries"
         }
     }
+
+
+@app.get("/meta/countries")
+async def meta_countries():
+    """Lightweight metadata for UI dropdowns: country -> regions + sector list."""
+    countries_path = DATA_DIR / "countries.json"
+    with open(countries_path) as f:
+        countries = json.load(f)
+
+    out = []
+    for code, cfg in countries.items():
+        if code.startswith("_"):
+            continue
+        out.append({
+            "code": code,
+            "name": cfg.get("country_name", code),
+            "regions": [
+                {"code": r.get("code"), "name": r.get("name")}
+                for r in cfg.get("regions", [])
+            ],
+            "sectors": list((cfg.get("sectors") or {}).keys()),
+        })
+    return {"countries": out}
 
 
 @app.post("/chat", response_model=ChatResponse)
@@ -301,7 +327,39 @@ async def assess_skills_endpoint(request: SkillsAssessmentRequest):
         countries_config=countries_config,
     )
 
-    return result
+    # Compute automation risk inline (deterministic, no Claude call) so we can
+    # persist a complete record and return it to the frontend.
+    automation_risk = {}
+    if countries_config:
+        try:
+            frey_osborne = load_frey_osborne()
+            automation_risk = assess_automation_risk(result, country_config, frey_osborne)
+        except Exception as exc:
+            print(f"[assess-skills] risk_engine failed: {exc}")
+
+    # Sector hint from primary matched occupation, if available
+    sector_hint = None
+    occupations = result.get("matched_occupations") or []
+    if occupations and countries_config:
+        primary_isco = str(occupations[0].get("isco_code", "")).strip()
+        wage_entry = (country_config.get("wage_data") or {}).get(primary_isco) or {}
+        sector_hint = wage_entry.get("sector")
+
+    profile_id = None
+    try:
+        profile_id = repository.insert_profile(
+            skills_profile=result,
+            automation_risk=automation_risk,
+            opportunities=[],
+            country_code=request.country_code,
+            sector_hint=sector_hint,
+            source="live",
+        )
+    except Exception as exc:
+        # Persistence failure shouldn't break the user-facing response
+        print(f"[assess-skills] persistence failed: {exc}")
+
+    return {**result, "profile_id": profile_id, "automation_risk": automation_risk}
 
 
 @app.post("/match-opportunities")
@@ -324,11 +382,51 @@ async def match_opportunities_endpoint(request: OpportunityMatchRequest):
         region=request.region
     )
 
+    opportunities = result.get("opportunities", [])
+
+    # Canonicalize skill_gap for persistence only (the response payload still
+    # carries Claude's rich, user-specific phrasing).
+    gap_texts = [(opp.get("skill_gap") or "") for opp in opportunities]
+    canonical_labels = classify_gaps(gap_texts) if any(gap_texts) else [None] * len(opportunities)
+    persisted_opps = []
+    for opp, label in zip(opportunities, canonical_labels):
+        copy = dict(opp)
+        if label and copy.get("skill_gap"):
+            copy["skill_gap"] = label
+        persisted_opps.append(copy)
+
+    # Persist: attach to existing profile if profile_id was carried through,
+    # otherwise insert a fresh standalone record (covers direct API callers).
+    profile_id = request.skills_profile.get("profile_id")
+    try:
+        if profile_id and repository.attach_opportunities(profile_id, persisted_opps):
+            pass
+        else:
+            risk = assess_automation_risk(request.skills_profile, country_config, frey_osborne)
+            occupations = request.skills_profile.get("matched_occupations") or []
+            sector_hint = None
+            if occupations:
+                primary_isco = str(occupations[0].get("isco_code", "")).strip()
+                wage_entry = (country_config.get("wage_data") or {}).get(primary_isco) or {}
+                sector_hint = wage_entry.get("sector")
+            profile_id = repository.insert_profile(
+                skills_profile=request.skills_profile,
+                automation_risk=risk,
+                opportunities=persisted_opps,
+                country_code=request.country_code,
+                region=request.region,
+                sector_hint=sector_hint,
+                source="live",
+            )
+    except Exception as exc:
+        print(f"[match-opportunities] persistence failed: {exc}")
+
     return {
-        "opportunities": result.get("opportunities", []),
+        "opportunities": opportunities,
         "country": country_config["country_name"],
         "region": request.region,
         "note": result.get("note"),
+        "profile_id": profile_id,
     }
 
 
@@ -348,33 +446,7 @@ async def report_endpoint(
     - Econometric signals
     """
     country_config = load_country_config(country)
-
-    # TODO: Implement actual aggregation from stored profiles
-    # For now, return placeholder structure
-    return {
-        "report_meta": {
-            "country": country_config.get("country_name", country),
-            "region": region,
-            "sector": sector,
-            "profiles_assessed": 0,
-            "report_date": "2026-04-25"
-        },
-        "skills_distribution": {
-            "top_skills": [],
-            "education_levels": {}
-        },
-        "automation_exposure": {
-            "high_risk": {"pct": 0, "top_occupations": []},
-            "moderate_risk": {"pct": 0, "top_occupations": []},
-            "low_risk": {"pct": 0, "top_occupations": []}
-        },
-        "opportunity_gaps": {
-            "highest_growth_sectors": [],
-            "biggest_skill_gaps": [],
-            "recommended_interventions": []
-        },
-        "econometric_signals": country_config.get("econometric", {})
-    }
+    return generate_report(country_config, region=region, sector=sector)
 
 
 # ============================================================================
