@@ -1,50 +1,27 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import ChatView from './ChatView'
-import ProfileCard from './ProfileCard'
-import OpportunityList from './OpportunityList'
 import PolicymakerView from './PolicymakerView'
-
-const API_URL = 'http://localhost:8000'
+import { LANGUAGES, t, isRTL } from './i18n'
 
 function App() {
   const [mode, setMode] = useState('citizen')  // 'citizen' | 'policymaker'
   const [country, setCountry] = useState('GH')
-  const [skillsProfile, setSkillsProfile] = useState(null)
-  const [opportunities, setOpportunities] = useState(null)
-  const [matching, setMatching] = useState(false)
-  const [matchError, setMatchError] = useState(null)
+  const [language, setLanguage] = useState(
+    () => localStorage.getItem('unmapped_language') || 'en'
+  )
 
-  const handleFindOpportunities = async () => {
-    setMatching(true)
-    setMatchError(null)
-    try {
-      const response = await fetch(`${API_URL}/match-opportunities`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          skills_profile: skillsProfile,
-          country_code: country,
-        }),
-      })
-      if (!response.ok) {
-        throw new Error(`Request failed: ${response.status}`)
-      }
-      const data = await response.json()
-      setOpportunities(data.opportunities ?? [])
-    } catch (error) {
-      console.error('Opportunity match error:', error)
-      setMatchError("Couldn't load opportunities. Please try again.")
-    } finally {
-      setMatching(false)
-    }
-  }
+  useEffect(() => {
+    localStorage.setItem('unmapped_language', language)
+  }, [language])
+
+  const rtl = isRTL(language)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" dir={rtl ? 'rtl' : 'ltr'}>
       <header className="bg-blue-600 text-white">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between flex-wrap gap-3">
-          <h1 className="text-xl font-bold tracking-tight">UNMAPPED</h1>
-          <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold tracking-tight">{t(language, 'headerTitle')}</h1>
+          <div className="flex items-center gap-3 flex-wrap">
             <div className="bg-blue-500/40 rounded-lg p-1 flex gap-1 text-sm">
               <button
                 onClick={() => setMode('citizen')}
@@ -64,11 +41,24 @@ function App() {
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
                 className="text-black rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-white"
+                aria-label={t(language, 'countryLabel')}
               >
                 <option value="GH">Ghana</option>
                 <option value="IN">India</option>
               </select>
             )}
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="text-black rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-white"
+              aria-label={t(language, 'languageLabel')}
+            >
+              {LANGUAGES.map((lang) => (
+                <option key={lang.code} value={lang.code}>
+                  {lang.native}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </header>
@@ -76,34 +66,13 @@ function App() {
       {mode === 'policymaker' ? (
         <PolicymakerView />
       ) : (
-      <main className="max-w-2xl mx-auto p-4">
-        {!skillsProfile ? (
-          <ChatView country={country} onProfileComplete={setSkillsProfile} />
-        ) : !opportunities ? (
-          <>
-            <ProfileCard profile={skillsProfile} />
-            <button
-              onClick={handleFindOpportunities}
-              disabled={matching}
-              className="w-full mt-4 bg-blue-600 text-white p-3 rounded disabled:opacity-50"
-            >
-              {matching ? 'Finding opportunities...' : 'Find Opportunities'}
-            </button>
-            {matchError && (
-              <p className="mt-2 text-sm text-red-600">{matchError}</p>
-            )}
-            <button
-              onClick={() => setSkillsProfile(null)}
-              disabled={matching}
-              className="w-full mt-2 border border-gray-300 text-gray-600 p-3 rounded disabled:opacity-50"
-            >
-              Start Over
-            </button>
-          </>
-        ) : (
-          <OpportunityList opportunities={opportunities} />
-        )}
-      </main>
+        <main className="max-w-2xl mx-auto p-4">
+          <ChatView
+            country={country}
+            language={language}
+            onProfileComplete={() => { /* ChatView renders top-5 opportunities inline */ }}
+          />
+        </main>
       )}
     </div>
   )

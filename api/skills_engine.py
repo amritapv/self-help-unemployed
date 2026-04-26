@@ -41,6 +41,21 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
+# ── Language map ──────────────────────────────────────────────────────────────
+_LANGUAGE_NAMES = {
+    "en": "English",
+    "hi": "Hindi",
+    "es": "Spanish",
+    "ar": "Arabic",
+    "fr": "French",
+}
+
+
+def _language_name(code: str) -> str:
+    """Map a language code to its English name. Falls back to English silently."""
+    return _LANGUAGE_NAMES.get((code or "en").lower(), "English")
+
+
 # ── Paths ─────────────────────────────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
@@ -214,6 +229,7 @@ def assess_skills(
     additional_information: str,
     country_code: str = "GH",
     countries_config: dict | None = None,
+    language: str = "en",
 ) -> dict:
     """
     Map a user's self-described profile to a standardised ESCO/ISCO-08
@@ -266,6 +282,8 @@ def assess_skills(
     # 4. Call Claude API
     client = anthropic.Anthropic()
 
+    language_name = _language_name(language)
+
     system_prompt = f"""You are a skills assessment engine for UNMAPPED — a platform helping young people in low- and middle-income countries get their real skills formally recognised.
 
 Your task: map a person's self-described background to a structured ESCO / ISCO-08 skills profile.
@@ -277,7 +295,7 @@ RULES:
 - level: "basic" | "intermediate" | "advanced"
 - skill_type: "knowledge" | "skill/competence" | "attitude"
 - isced_level: integer string "0"–"8"
-- Write portable_summary in second person ("You have...", "Your skills...") in plain English the user can read and share with an employer.
+- Write portable_summary in casual, friendly second person — like a mentor talking to the user, not a CV writer. Use contractions ("you've", "you're"). Skip corporate words like "demonstrate", "leverage", "utilise", "translates well to", "robust", "transferable skills". Talk like a normal person. 3-4 short sentences. Examples of the right tone: "You've spent five years fixing phones in Accra and you know your way around a circuit board. You taught yourself Python from YouTube — that's the kind of grit employers like." Examples to AVOID: "You demonstrate strong technical capabilities in mobile device repair and exhibit self-directed learning behaviours."
 
 Country context: {country_name}
 Education taxonomy for this country:
@@ -306,7 +324,13 @@ Respond with ONLY a JSON object — no prose, no markdown fences — matching th
     {{"language": "string", "proficiency": "native|fluent|conversational|basic"}}
   ],
   "portable_summary": "3-4 sentence plain-language summary Amara can share with employers or training programs"
-}}"""
+}}
+
+LANGUAGE: Respond in {language_name}. Specifically:
+- portable_summary: write in {language_name}.
+- skill_name fields: write in {language_name}.
+- All other fields (uri, isco_code, isced_level, level, skill_type, language, proficiency): keep as English/canonical taxonomy values.
+- evidence: keep as the verbatim phrase from the user's input — do not translate it."""
 
     user_message = f"""Map this person's background to a structured ESCO / ISCO-08 profile.
 

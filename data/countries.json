@@ -272,7 +272,25 @@
           "3514"
         ]
       }
-    ]
+    ],
+    "localization": {
+      "self_service_examples": [
+        "Petrol stations switching to self-service pumps",
+        "ATMs replacing some bank tellers",
+        "Mobile money agents replacing some over-the-counter banking"
+      ],
+      "peer_trades_steady": ["electricians", "plumbers", "tailors", "carpenters"],
+      "growth_pivots": [
+        {"skill": "Solar PV installation", "why": "Government renewable-energy push, free 2-week course at NVTI"},
+        {"skill": "Mobile money agent skills", "why": "Digital payments expanding rapidly across Accra and Kumasi"},
+        {"skill": "Hybrid vehicle repair", "why": "Newer vehicles increasingly common in Greater Accra"}
+      ],
+      "automation_pace_note": "Slower than high-income countries. The cost of installing automation in informal Ghanaian trades is high, and skilled hands are still cheaper than imported machines.",
+      "horizon_years_urban": 8,
+      "horizon_years_rural": 15,
+      "tone_register": "warm and respectful; everyday English; affirmations like 'eh' or 'oh' are fine in informal contexts",
+      "money_anchor_phrase": "GHS per month"
+    }
   },
   "IN": {
     "country_code": "IN",
@@ -537,6 +555,24 @@
           "3514"
         ]
       }
-    ]
+    ],
+    "localization": {
+      "self_service_examples": [
+        "Self-checkout kiosks in Bangalore and Mumbai malls",
+        "UPI replacing cash counters at smaller shops",
+        "WhatsApp shopping replacing some neighbourhood store visits"
+      ],
+      "peer_trades_steady": ["electricians", "plumbers", "tailors", "carpenters"],
+      "growth_pivots": [
+        {"skill": "EV / hybrid vehicle repair", "why": "Rapid EV adoption in metro cities; demand outpacing trained mechanics"},
+        {"skill": "Solar PV installation", "why": "PMKVY skill program covers it free; rooftop solar boom in Maharashtra and Karnataka"},
+        {"skill": "Smartphone software troubleshooting", "why": "Hundreds of millions of new smartphones each year creates steady repair work"}
+      ],
+      "automation_pace_note": "Faster in tier-1 cities. Smaller towns and rural areas see automation arrive much more slowly.",
+      "horizon_years_urban": 5,
+      "horizon_years_rural": 12,
+      "tone_register": "encouraging and direct; English is fine for technical terms but plain language for everything else",
+      "money_anchor_phrase": "INR per month"
+    }
   }
 }
