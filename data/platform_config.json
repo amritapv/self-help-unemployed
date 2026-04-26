@@ -5,11 +5,31 @@
     "last_updated": "2026-04-25"
   },
   "languages": {
-    "en": { "name": "English",  "native": "English",       "rtl": false },
-    "hi": { "name": "Hindi",    "native": "हिन्दी",         "rtl": false },
-    "es": { "name": "Spanish",  "native": "Español",       "rtl": false },
-    "ar": { "name": "Arabic",   "native": "العربية",        "rtl": true  },
-    "fr": { "name": "French",   "native": "Français",      "rtl": false }
+    "en": {
+      "name": "English",
+      "native": "English",
+      "rtl": false
+    },
+    "hi": {
+      "name": "Hindi",
+      "native": "हिन्दी",
+      "rtl": false
+    },
+    "es": {
+      "name": "Spanish",
+      "native": "Español",
+      "rtl": false
+    },
+    "ar": {
+      "name": "Arabic",
+      "native": "العربية",
+      "rtl": true
+    },
+    "fr": {
+      "name": "French",
+      "native": "Français",
+      "rtl": false
+    }
   },
   "verdict_thresholds": {
     "_description": "Boundaries for the automation-risk verdict bucket. score < mostly_safe_max -> mostly_safe; < watch_max -> watch; else act_now.",
@@ -19,27 +39,54 @@
   "sector_translations": {
     "_description": "Slug -> friendly noun phrase per language. Used by the matcher prompt's 'sector_growth' field instruction. For languages not listed here, Sonnet falls back to translating the English version on the fly.",
     "en": {
-      "ict": "tech and digital jobs",
-      "renewable_energy": "solar and renewable energy",
-      "services": "services and repair work",
+      "agriculture": "farming, forestry, and fishing",
+      "mining": "mining and quarrying",
       "manufacturing": "factory and manufacturing work",
-      "agriculture": "farming",
+      "utilities": "electricity, gas, and renewable energy",
+      "water_waste": "water, sanitation, and waste",
       "construction": "building and construction",
       "retail": "shops and selling",
-      "finance": "banking",
+      "transport": "transport, delivery, and driving",
+      "hospitality": "hotels, restaurants, and food service",
+      "ict": "tech and digital jobs",
+      "finance": "banking and finance",
+      "real_estate": "real estate",
+      "professional_services": "professional and technical services",
+      "admin_support": "administrative and support work",
+      "public_admin": "public administration",
+      "education": "teaching",
       "healthcare": "health and care work",
-      "education": "teaching"
+      "arts_recreation": "arts, entertainment, and recreation",
+      "other_services": "repair shops and personal services",
+      "household": "household and domestic work",
+      "extraterritorial": "international organisations"
     }
   },
   "opportunity_type_metadata": {
     "_description": "Every type that any country can surface. Per-country availability is set in countries.<CC>.opportunity_types — that list is what gets passed into the matcher prompt.",
-    "formal_employment":   { "label_en": "Formal employment" },
-    "self_employment":     { "label_en": "Self-employment" },
-    "gig":                 { "label_en": "Gig work" },
-    "apprenticeship":      { "label_en": "Apprenticeship" },
-    "training_pathway":    { "label_en": "Training pathway" },
-    "government_scheme":   { "label_en": "Government scheme" },
-    "overseas_employment": { "label_en": "Overseas employment (OFW)" },
-    "cooperative":         { "label_en": "Cooperative membership" }
+    "formal_employment": {
+      "label_en": "Formal employment"
+    },
+    "self_employment": {
+      "label_en": "Self-employment"
+    },
+    "gig": {
+      "label_en": "Gig work"
+    },
+    "apprenticeship": {
+      "label_en": "Apprenticeship"
+    },
+    "training_pathway": {
+      "label_en": "Training pathway"
+    },
+    "government_scheme": {
+      "label_en": "Government scheme"
+    },
+    "overseas_employment": {
+      "label_en": "Overseas employment (OFW)"
+    },
+    "cooperative": {
+      "label_en": "Cooperative membership"
+    }
   }
 }
