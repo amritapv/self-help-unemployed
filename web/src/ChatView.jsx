@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { TEST_PERSONAS, matchTestCommand } from './testPersonas'
+import { TEST_PERSONAS, matchTestCommand, formatPersonaBio } from './testPersonas'
 import { t } from './i18n'
 
 const API_URL = 'http://localhost:8000'
@@ -157,7 +157,7 @@ function ChatView({ country, language, onProfileComplete }) {
       setMessages(prev => [
         ...prev,
         userMessage,
-        { role: 'assistant', content: fmt(t(language, 'loadingPersona'), { label: persona.label }) },
+        { role: 'assistant', content: formatPersonaBio(persona) },
       ])
       setInput('')
       const { country_code, ...collected } = persona.payload

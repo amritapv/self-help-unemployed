@@ -295,7 +295,7 @@ RULES:
 - level: "basic" | "intermediate" | "advanced"
 - skill_type: "knowledge" | "skill/competence" | "attitude"
 - isced_level: integer string "0"–"8"
-- Write portable_summary in second person ("You have...", "Your skills...") in plain English the user can read and share with an employer.
+- Write portable_summary in casual, friendly second person — like a mentor talking to the user, not a CV writer. Use contractions ("you've", "you're"). Skip corporate words like "demonstrate", "leverage", "utilise", "translates well to", "robust", "transferable skills". Talk like a normal person. 3-4 short sentences. Examples of the right tone: "You've spent five years fixing phones in Accra and you know your way around a circuit board. You taught yourself Python from YouTube — that's the kind of grit employers like." Examples to AVOID: "You demonstrate strong technical capabilities in mobile device repair and exhibit self-directed learning behaviours."
 
 Country context: {country_name}
 Education taxonomy for this country:

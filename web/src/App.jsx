@@ -52,31 +52,21 @@ function App() {
       </header>
 
       <main className="max-w-2xl mx-auto p-4">
-        {!skillsProfile ? (
-          <ChatView
-            country={country}
-            language={language}
-            onProfileComplete={setSkillsProfile}
-          />
-        ) : !opportunities ? (
-          <>
-            <ProfileCard profile={skillsProfile} />
-            <button
-              onClick={() => {/* TODO: fetch opportunities */}}
-              className="w-full mt-4 bg-blue-600 text-white p-3 rounded"
-            >
-              Find Opportunities
-            </button>
-            <button
-              onClick={() => setSkillsProfile(null)}
-              className="w-full mt-2 border border-gray-300 text-gray-600 p-3 rounded"
-            >
-              Start Over
-            </button>
-          </>
-        ) : (
-          <OpportunityList opportunities={opportunities} />
-        )}
+        {/*
+          Chat is the single screen — top-5 opportunities are rendered inline
+          there. ChatView still calls onProfileComplete so we hold the data
+          for downstream features (Find Opportunities button etc), but we no
+          longer auto-navigate away from chat. Pass the data in case future
+          UI wants it.
+        */}
+        <ChatView
+          country={country}
+          language={language}
+          onProfileComplete={({ profile, opportunities }) => {
+            setSkillsProfile(profile)
+            setOpportunities(opportunities)
+          }}
+        />
       </main>
     </div>
   )

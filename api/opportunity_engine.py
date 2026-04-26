@@ -212,8 +212,8 @@ def _build_prompt(
 2. Pick exactly the TOP 5 opportunities. Order best first. Always return 5 unless the candidate pool is smaller, in which case return them all.
 3. CITE numbers verbatim from the candidates list — don't invent wages, growth rates, or pathways.
 4. Use ONLY ISCO codes from the candidates list. Use ONLY training_pathway IDs from the country pathways.
-5. Plain language. Wrap numbers in meaning ("Construction has grown 7% per year recently") — never raw jargon.
-6. Be honest about gaps. If a match needs certification, say which pathway from the list.
+5. WRITE LIKE A FRIEND, NOT A RECRUITER. Use contractions ("you'd", "you're", "you've"). Use everyday phrasing — talk like a mentor over tea, not a corporate brochure. Avoid these dead words: "demonstrate", "leverage", "utilize/utilise", "translates well to", "transferable skills", "robust", "synergies", "competencies", "qualifications". Wrap numbers in meaning ("Construction has grown 7% per year recently") — never raw jargon.
+6. Be honest about gaps. If a match needs certification, say which pathway from the list — in plain words ("you'll need to grab the NVTI cert — it's 12 weeks").
 7. If the user's seeded skills are too thin, return an empty `opportunities` list and put a sentence explaining in `note`.
 
 # Output
@@ -226,9 +226,9 @@ Return JSON with this exact shape — nothing else, no markdown fences:
       "employer_or_path": "An employer name OR the path (e.g., 'Self-employment in your neighbourhood')",
       "wage_range": "Wage as a range with the floor (minimum) on the low end and the high end clearly framed. Cite the candidate's wage_min and wage_max verbatim. Format: '<currency> <floor> (starting) – <high> (high end) /month'. Example: 'GHS 1,800 (starting) – 2,400 (high end) /month'. Always show both ends.",
       "sector_growth": "Friendly, non-technical description of how this job's sector is growing — for someone with no business or economics vocabulary. NO jargon (avoid words like 'ICT', 'CAGR', 'sector growth rate'). Translate sector slugs to everyday words: 'ict' -> 'tech and digital jobs', 'renewable_energy' -> 'solar and renewable energy', 'services' -> 'services and repair work', 'manufacturing' -> 'factory and manufacturing work', 'agriculture' -> 'farming', 'construction' -> 'building and construction', 'retail' -> 'shops and selling', 'finance' -> 'banking', 'healthcare' -> 'health and care work', 'education' -> 'teaching'. Cite the candidate's sector_growth_pct number verbatim. Example: 'Tech and digital jobs are growing fast — about 14% more work each year.' or 'Mobile repair and services have steady demand, with about 6% more work each year.'",
-      "fit_explanation": "ONE short sentence (15-25 words) explaining why this is a good fit, citing the user's actual skills. Punchy and clear — no jargon.",
-      "skill_gap": "What the user is missing (or null if no gap)",
-      "next_step": "One concrete action — e.g., 'Register at NVTI for the next intake' (must reference a pathway ID if applicable)"
+      "fit_explanation": "ONE short, conversational sentence (15-25 words). Talk like a friend giving honest advice. Use contractions and everyday words. Cite the user's actual skills naturally. Examples of the right tone: 'Your phone-repair chops carry straight over here — you already know what most of the day looks like.' or 'You're not far off — the soldering and circuit work map nicely, you'd just need to learn solar wiring.' AVOID: 'Your skills translate well to', 'demonstrates strong alignment', 'leverages your background'.",
+      "skill_gap": "What the user is missing (or null if no gap). Casual phrasing — 'You'll need a solar cert' not 'Lacks certification in photovoltaic systems'.",
+      "next_step": "One concrete action, casual and direct — 'Sign up for the free Energy Commission solar course (it's 2 weeks)' or 'Walk into the NVTI office and ask about the Q3 intake'. Must reference a pathway ID by name when applicable."
     }}
   ],
   "note": "Optional explanation if you returned <3 opportunities or no opportunities"

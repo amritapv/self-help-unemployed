@@ -2,12 +2,27 @@
 // pre-collected SkillsAssessmentRequest body — bypasses the chat back-and-forth
 // and goes straight to /assess-skills + /match-opportunities.
 //
+// `bio` is shown in the chat as a profile card before the assessment runs,
+// so the user can see who they're testing as.
+//
 // To add a persona: drop another entry here keyed by lowercase name.
 
 export const TEST_PERSONAS = {
   amara: {
     label: 'Amara — Ghana, mobile phone repair (low-risk technical trade)',
     expectedVerdict: 'mostly_safe',
+    bio: {
+      name: 'Amara',
+      age: 22,
+      city: 'Accra',
+      country: 'Ghana',
+      tagline: 'The self-made repair tech.',
+      headline: 'Runs her own phone repair shop in Accra. Self-taught coder.',
+      backstory:
+        "Five years in the trade. Started by fixing her cousin's cracked screen, " +
+        'now has a steady customer base around Osu. Picks up Python on YouTube ' +
+        'in the quiet hours and has been teaching her two younger siblings the ropes.',
+    },
     payload: {
       country_code: 'GH',
       region: 'greater_accra',
@@ -26,6 +41,19 @@ export const TEST_PERSONAS = {
   bern: {
     label: 'Bern — India, office clerk (high-risk clerical work)',
     expectedVerdict: 'act_now',
+    bio: {
+      name: 'Bern',
+      age: 25,
+      city: 'Mumbai',
+      country: 'India',
+      tagline: 'The bright clerk feeling the squeeze.',
+      headline: 'Data entry clerk at a small Mumbai accounting firm. BCom degree.',
+      backstory:
+        'Three years on Tally — invoices, ledgers, client records. Knows Excel cold. ' +
+        "Quick at filing and great at handling phone queries. Lately he's been hearing " +
+        "the firm talk about software that might do most of his day's work, and " +
+        "he's wondering what comes next.",
+    },
     payload: {
       country_code: 'IN',
       region: 'maharashtra',
@@ -45,6 +73,19 @@ export const TEST_PERSONAS = {
   cal: {
     label: 'Cal — Ghana, electronics retail (moderate-risk retail work)',
     expectedVerdict: 'watch',
+    bio: {
+      name: 'Cal',
+      age: 23,
+      city: 'Kumasi',
+      country: 'Ghana',
+      tagline: 'The natural seller in a shifting market.',
+      headline: "Sells electronics at his uncle's shop in Kumasi.",
+      backstory:
+        'Three years on the floor — TVs, phones, fridges, small appliances. ' +
+        'Knows the products inside-out and can read what a customer needs. ' +
+        "Lately the shop's been losing some traffic to online sellers and he's " +
+        'looking for a steadier next move.',
+    },
     payload: {
       country_code: 'GH',
       region: 'ashanti',
@@ -71,4 +112,16 @@ export function matchTestCommand(input) {
   const m = input.trim().match(/^test\s*:\s*(amara|bern|cal)\s*$/i)
   if (!m) return null
   return TEST_PERSONAS[m[1].toLowerCase()]
+}
+
+// Renders a persona's bio as a chat-friendly card-string.
+export function formatPersonaBio(persona) {
+  const b = persona.bio
+  if (!b) return persona.label
+  return (
+    `${b.name}, ${b.age} — ${b.city}, ${b.country}\n` +
+    `"${b.tagline}"\n\n` +
+    `${b.headline}\n\n` +
+    `${b.backstory}`
+  )
 }

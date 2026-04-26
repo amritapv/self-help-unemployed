@@ -236,31 +236,31 @@ def _build_summary(
     horizon: int,
     loc: dict[str, Any],
 ) -> str:
-    """One short paragraph, plain language, no percentages, no jargon."""
+    """One short paragraph — conversational, no percentages, no jargon."""
     label = _verdict_label(bucket)
-    parts = [f"Your work as a {occupation_title} in {country_name} looks {label}."]
+    parts = [f"Look — what you do as a {occupation_title} here in {country_name}? It's {label}."]
 
     examples = loc.get("self_service_examples", [])
     if examples:
         parts.append(
-            f"You've probably already seen this elsewhere — {examples[0].lower()} — "
-            "it's the same idea: routine parts get a machine, the clever parts stay with people."
+            f"You've seen it before — {examples[0].lower()}. "
+            "Same thing here: the boring stuff gets handed to machines, the clever stuff stays with you."
         )
 
     if bucket == "mostly_safe":
         parts.append(
-            f"In the next {horizon} years, machines might handle some of your simpler tasks, "
-            "but most of your day still needs your judgement and your relationships."
+            f"Over the next {horizon} years, machines might pick up a few of your simpler tasks, "
+            "but most of your day still needs your eye and your people skills. You're alright."
         )
     elif bucket == "watch":
         parts.append(
-            f"In the next {horizon} years, a meaningful slice of your work could shift to machines. "
-            "Picking up one growing skill now keeps you ahead."
+            f"Over the next {horizon} years, a real chunk of what you do could shift to machines. "
+            "Pick up one growing skill now and you'll stay ahead."
         )
     else:
         parts.append(
-            f"In the next {horizon} years, a lot of your work could shift to machines. "
-            "A pivot to skills with stronger human judgement will protect your income."
+            f"Over the next {horizon} years, a lot of your work could shift to machines. "
+            "Time to pivot — pick up something that still needs human judgement, before the squeeze hits harder."
         )
 
     return " ".join(parts)
@@ -365,7 +365,7 @@ def assess_automation_risk(
         "verdict_label": label,
         "calibrated_score": calibrated,
         "horizon_years": horizon,
-        "summary_line": f"Your work as a {occupation_title} in {country_name} looks {label}.",
+        "summary_line": f"What you do as a {occupation_title} here in {country_name}? It's {label}.",
         "plain_language_summary": summary,
         "machines_handling": hints["machines_handle"],
         "still_needs_you": hints["still_needs_you"],
