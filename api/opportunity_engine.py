@@ -119,8 +119,8 @@ def _build_candidates(
     sectors = country_config.get("sectors", {})
 
     # Build candidates for every wage_data ISCO, tagging by relationship to M01.
-    # Sonnet picks the top 5 from the scored pool — broad laterals are kept so
-    # we can always honour "top 5" even when M01 surfaces only one occupation.
+    # Sonnet picks the top 3 from the scored pool — broad laterals are kept so
+    # we can always honour "top 3" even when M01 surfaces only one occupation.
     candidates: list[dict[str, Any]] = []
     for isco, wage in wage_data.items():
         if isco.startswith("_"):
@@ -243,7 +243,7 @@ def _build_prompt(
 
 # How you work
 1. Rank candidates by realistic fit (skill alignment + automation resilience + reachability).
-2. Pick exactly the TOP 5 opportunities. Order best first. Always return 5 unless the candidate pool is smaller, in which case return them all.
+2. Pick exactly the TOP 3 opportunities. Order best first. Always return 3 unless the candidate pool is smaller, in which case return them all.
 3. CITE numbers verbatim from the candidates list — don't invent wages, growth rates, or pathways.
 4. Use ONLY ISCO codes from the candidates list. Use ONLY training_pathway IDs from the country pathways.
 5. WRITE LIKE A FRIEND, NOT A RECRUITER. Use contractions ("you'd", "you're", "you've"). Use everyday phrasing — talk like a mentor over tea, not a corporate brochure. Avoid these dead words: "demonstrate", "leverage", "utilize/utilise", "translates well to", "transferable skills", "robust", "synergies", "competencies", "qualifications". Wrap numbers in meaning ("Construction has grown 7% per year recently") — never raw jargon.
@@ -308,7 +308,7 @@ Region of interest: {region or 'any region'}
 
 {candidates_text}
 
-Return JSON per the schema. Pick the TOP 5 best matches in fit-order. If the candidate pool is smaller than 5, return them all. If nothing fits well, return empty opportunities and put the reason in `note`."""
+Return JSON per the schema. Pick the TOP 3 best matches in fit-order. If the candidate pool is smaller than 3, return them all. If nothing fits well, return empty opportunities and put the reason in `note`."""
 
     return system, user
 

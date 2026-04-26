@@ -11,13 +11,15 @@ function fmt(template, vars) {
   return template.replace(/\{(\w+)\}/g, (_, k) => (k in vars ? vars[k] : `{${k}}`))
 }
 
-function ChatView({ country, language, onProfileComplete }) {
+function ChatView({ country, language, onProfileComplete, onNavigate }) {
   const [messages, setMessages] = useState([
     { role: 'assistant', content: t(language, 'greeting') }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [collectedData, setCollectedData] = useState(null)
+  const [assessmentReady, setAssessmentReady] = useState(false)
+  const [hasOpportunities, setHasOpportunities] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [speechLang, setSpeechLang] = useState('en-US')
   const recognitionRef = useRef(null)
@@ -80,11 +82,13 @@ function ChatView({ country, language, onProfileComplete }) {
     }
     setMessages([{ role: 'assistant', content: t(language, 'greeting') }])
     setCollectedData(null)
+    setAssessmentReady(false)
+    setHasOpportunities(false)
     prevLangRef.current = language
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language])
 
-  // Shared assessment chain: /assess-skills -> /match-opportunities -> render top 5.
+  // Shared assessment chain: /assess-skills -> /match-opportunities -> render top 3.
   const runAssessment = async ({ collected, country_code }) => {
     setLoading(true)
     setMessages(prev => [
@@ -110,49 +114,25 @@ function ChatView({ country, language, onProfileComplete }) {
       const oppsData = await oppsRes.json()
       const opportunities = oppsData.opportunities || []
 
-      // 3. Format the final chat message: summary -> risk -> top-5
+      // 3. Format a CONCISE chat message. Detail lives on the Skills Profile
+      // and Job Opportunities tabs — the chat just gives a one-glance summary
+      // and points users to the dedicated screens.
       const summary = profile.portable_summary || ''
       const n = opportunities.length
+      const risk = profile.automation_risk
       const sections = []
 
       if (summary) sections.push(summary)
 
-      // Module 02 risk section (embedded in /assess-skills response)
-      const risk = profile.automation_risk
       if (risk && risk.verdict && risk.verdict !== 'unknown') {
-        const lines = [
-          `${t(language, 'automationOutlook')}: ${risk.verdict_label}`,
-          '',
-          risk.plain_language_summary,
-        ]
-        if (risk.machines_handling?.length) {
-          lines.push('', `${t(language, 'machinesGettingBetter')}:`)
-          risk.machines_handling.forEach(m => lines.push(`   - ${m}`))
-        }
-        if (risk.still_needs_you?.length) {
-          lines.push('', `${t(language, 'stillNeedsYou')}:`)
-          risk.still_needs_you.forEach(m => lines.push(`   - ${m}`))
-        }
-        if (risk.worth_learning?.length) {
-          lines.push('', `${t(language, 'worthPickingUp')}:`)
-          risk.worth_learning.forEach(m => lines.push(`   - ${m}`))
-        }
-        sections.push(lines.join('\n'))
+        sections.push(`${t(language, 'automationOutlook')}: ${risk.verdict_label}.`)
       }
 
       if (n > 0) {
-        const oppLines = opportunities.slice(0, 5).map((opp, i) => {
-          const lines = [
-            `${i + 1}. ${opp.title}`,
-            `   ${t(language, 'whyItFits')}: ${opp.fit_explanation}`,
-            `   ${t(language, 'wage')}: ${opp.wage_range}`,
-            `   ${t(language, 'outlook')}: ${opp.sector_growth || opp.sector_growth_signal}`,
-          ]
-          if (opp.skill_gap) lines.push(`   ${t(language, 'gap')}: ${opp.skill_gap}`)
-          lines.push(`   ${t(language, 'nextStep')}: ${opp.next_step}`)
-          return lines.join('\n')
-        }).join('\n\n')
-        sections.push(`${fmt(t(language, 'topNOpportunities'), { n })}\n\n${oppLines}`)
+        sections.push(
+          `${fmt(t(language, 'topNOpportunities'), { n })}\n\n` +
+          `Tap the **Skills Profile** and **Job Opportunities** tabs above for the full breakdown.`
+        )
       }
 
       const finalMessage = sections.length
@@ -160,6 +140,8 @@ function ChatView({ country, language, onProfileComplete }) {
         : (oppsData.note ? `${oppsData.note}` : t(language, 'noMatchFallback'))
 
       setMessages(prev => [...prev, { role: 'assistant', content: finalMessage }])
+      setAssessmentReady(!!profile)
+      setHasOpportunities(opportunities.length > 0)
       onProfileComplete?.({ profile, opportunities, country: country_code })
     } catch (error) {
       console.error('Assessment error:', error)
@@ -233,6 +215,26 @@ function ChatView({ country, language, onProfileComplete }) {
         {loading && (
           <div className="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-[85%]">
             <span className="animate-pulse">...</span>
+          </div>
+        )}
+
+        {/* Action buttons after the assessment lands — quick-jump to the dedicated screens. */}
+        {assessmentReady && !loading && onNavigate && (
+          <div className="flex flex-wrap gap-2 max-w-[85%]">
+            <button
+              onClick={() => onNavigate('skills')}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
+            >
+              See Skills Profile →
+            </button>
+            {hasOpportunities && (
+              <button
+                onClick={() => onNavigate('opps')}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700"
+              >
+                See Job Opportunities →
+              </button>
+            )}
           </div>
         )}
       </div>
