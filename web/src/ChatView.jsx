@@ -111,27 +111,53 @@ function ChatView({ country, language, onProfileComplete }) {
       const oppsData = await oppsRes.json()
       const opportunities = oppsData.opportunities || []
 
-      // 3. Format top 5 as a chat message
+      // 3. Format the final chat message: summary -> risk -> top-5
       const summary = profile.portable_summary || ''
       const n = opportunities.length
-      const intro = summary
-        ? fmt(t(language, 'basedOnInput'), { summary, n })
-        : fmt(t(language, 'topNOpportunities'), { n })
+      const sections = []
 
-      const oppLines = opportunities.slice(0, 5).map((opp, i) => {
+      if (summary) sections.push(summary)
+
+      // Module 02 risk section (embedded in /assess-skills response)
+      const risk = profile.automation_risk
+      if (risk && risk.verdict && risk.verdict !== 'unknown') {
         const lines = [
-          `\n${i + 1}. ${opp.title}`,
-          `   ${t(language, 'whyItFits')}: ${opp.fit_explanation}`,
-          `   ${t(language, 'wage')}: ${opp.wage_range}`,
-          `   ${t(language, 'outlook')}: ${opp.sector_growth || opp.sector_growth_signal}`,
+          `${t(language, 'automationOutlook')}: ${risk.verdict_label}`,
+          '',
+          risk.plain_language_summary,
         ]
-        if (opp.skill_gap) lines.push(`   ${t(language, 'gap')}: ${opp.skill_gap}`)
-        lines.push(`   ${t(language, 'nextStep')}: ${opp.next_step}`)
-        return lines.join('\n')
-      }).join('\n')
+        if (risk.machines_handling?.length) {
+          lines.push('', `${t(language, 'machinesGettingBetter')}:`)
+          risk.machines_handling.forEach(m => lines.push(`   - ${m}`))
+        }
+        if (risk.still_needs_you?.length) {
+          lines.push('', `${t(language, 'stillNeedsYou')}:`)
+          risk.still_needs_you.forEach(m => lines.push(`   - ${m}`))
+        }
+        if (risk.worth_learning?.length) {
+          lines.push('', `${t(language, 'worthPickingUp')}:`)
+          risk.worth_learning.forEach(m => lines.push(`   - ${m}`))
+        }
+        sections.push(lines.join('\n'))
+      }
 
-      const finalMessage = oppLines
-        ? `${intro}\n${oppLines}`
+      if (n > 0) {
+        const oppLines = opportunities.slice(0, 5).map((opp, i) => {
+          const lines = [
+            `${i + 1}. ${opp.title}`,
+            `   ${t(language, 'whyItFits')}: ${opp.fit_explanation}`,
+            `   ${t(language, 'wage')}: ${opp.wage_range}`,
+            `   ${t(language, 'outlook')}: ${opp.sector_growth || opp.sector_growth_signal}`,
+          ]
+          if (opp.skill_gap) lines.push(`   ${t(language, 'gap')}: ${opp.skill_gap}`)
+          lines.push(`   ${t(language, 'nextStep')}: ${opp.next_step}`)
+          return lines.join('\n')
+        }).join('\n\n')
+        sections.push(`${fmt(t(language, 'topNOpportunities'), { n })}\n\n${oppLines}`)
+      }
+
+      const finalMessage = sections.length
+        ? sections.join('\n\n')
         : (oppsData.note ? `${oppsData.note}` : t(language, 'noMatchFallback'))
 
       setMessages(prev => [...prev, { role: 'assistant', content: finalMessage }])

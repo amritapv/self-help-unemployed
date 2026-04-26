@@ -60,6 +60,7 @@ class SkillsAssessmentRequest(BaseModel):
     skills_self_reported: str
     additional_info: str
     country_code: str = "GH"  # Default to Ghana
+    region: Optional[str] = None
     language: str = "en"
 
 
@@ -325,6 +326,24 @@ async def assess_skills_endpoint(request: SkillsAssessmentRequest):
         countries_config=countries_config,
         language=request.language,
     )
+
+    # Module 02: compute automation risk inline so the chat sees it on the
+    # same response as the profile (no separate /risk roundtrip).
+    if country_config:
+        try:
+            frey_osborne = load_frey_osborne()
+            result["automation_risk"] = assess_automation_risk(
+                skills_profile=result,
+                country_config=country_config,
+                frey_osborne=frey_osborne,
+                region=request.region,
+                language=request.language,
+            )
+        except Exception as e:
+            # Don't fail the whole assessment if risk fails — log and move on.
+            import sys
+            print(f"[risk_engine] failed: {e}", file=sys.stderr)
+            result["automation_risk"] = None
 
     return result
 
