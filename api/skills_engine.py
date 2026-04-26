@@ -39,21 +39,9 @@ from typing import Any
 import anthropic
 from dotenv import load_dotenv
 
+from api.platform_config import language_name as _language_name
+
 load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
-
-# ── Language map ──────────────────────────────────────────────────────────────
-_LANGUAGE_NAMES = {
-    "en": "English",
-    "hi": "Hindi",
-    "es": "Spanish",
-    "ar": "Arabic",
-    "fr": "French",
-}
-
-
-def _language_name(code: str) -> str:
-    """Map a language code to its English name. Falls back to English silently."""
-    return _LANGUAGE_NAMES.get((code or "en").lower(), "English")
 
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
