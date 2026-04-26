@@ -5,6 +5,8 @@ import OpportunityList from './OpportunityList'
 import PolicymakerView from './PolicymakerView'
 import { LANGUAGES, t, isRTL } from './i18n'
 
+const API_URL = 'http://localhost:8000'
+
 function App() {
   const [mode, setMode] = useState('citizen')          // 'citizen' | 'policymaker'
   const [view, setView] = useState('chat')             // 'chat' | 'skills' | 'opps'
@@ -14,10 +16,29 @@ function App() {
   )
   const [skillsProfile, setSkillsProfile] = useState(null)
   const [opportunities, setOpportunities] = useState(null)
+  // Fetched from GET /meta/countries at startup so adding a country to
+  // countries.json shows up in the dropdown without a frontend code change.
+  const [availableCountries, setAvailableCountries] = useState([
+    { code: 'GH', name: 'Ghana' },
+    { code: 'IN', name: 'India' },
+  ])
 
   useEffect(() => {
     localStorage.setItem('unmapped_language', language)
   }, [language])
+
+  useEffect(() => {
+    let cancelled = false
+    fetch(`${API_URL}/meta/countries`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return
+        const list = (data?.countries || []).map((c) => ({ code: c.code, name: c.name }))
+        if (list.length > 0) setAvailableCountries(list)
+      })
+      .catch(() => { /* keep the hardcoded fallback if the API isn't up yet */ })
+    return () => { cancelled = true }
+  }, [])
 
   const rtl = isRTL(language)
   const hasResults = !!skillsProfile
@@ -55,8 +76,9 @@ function App() {
                 className="text-black rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-white"
                 aria-label={t(language, 'countryLabel')}
               >
-                <option value="GH">Ghana</option>
-                <option value="IN">India</option>
+                {availableCountries.map((c) => (
+                  <option key={c.code} value={c.code}>{c.name}</option>
+                ))}
               </select>
             )}
             <select

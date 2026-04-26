@@ -24,182 +24,36 @@ from typing import Any
 
 import anthropic
 
+from api.platform_config import (
+    isco_task_hints,
+    is_supported_language,
+    language_name as _language_name,
+    verdict_bucket as _verdict_bucket,
+)
+
 _TRANSLATION_MODEL = "claude-sonnet-4-20250514"
 
-_LANGUAGE_NAMES = {
-    "en": "English",
-    "hi": "Hindi",
-    "es": "Spanish",
-    "ar": "Arabic",
-    "fr": "French",
-}
+# ISCO_TASK_HINTS now lives in data/isco_task_hints.json.
+# Code that calls ISCO_TASK_HINTS.get(code) keeps working via this thin wrapper.
+class _IscoTaskHintsView:
+    def get(self, code, default=None):
+        from api.platform_config import isco_task_hints as _h
+        return _h(code) or default
+    def __contains__(self, code):
+        from api.platform_config import has_task_hints
+        return has_task_hints(code)
+    def __getitem__(self, code):
+        from api.platform_config import isco_task_hints as _h
+        v = _h(code)
+        if v is None:
+            raise KeyError(code)
+        return v
+
+ISCO_TASK_HINTS = _IscoTaskHintsView()
 
 
-def _language_name(code: str) -> str:
-    """Map a language code to its English name. Falls back to English silently."""
-    return _LANGUAGE_NAMES.get((code or "en").lower(), "English")
-
-# What machines are getting better at vs what still needs a human, per ISCO.
-# Hand-curated. Lists are short on purpose — the chat surfaces them as bullets.
-ISCO_TASK_HINTS: dict[str, dict[str, list[str]]] = {
-    "2519": {
-        "machines_handle": [
-            "Boilerplate code generation",
-            "Routine bug fixing on common stacks",
-            "Simple website setup from templates",
-        ],
-        "still_needs_you": [
-            "Designing systems that fit a real business",
-            "Translating what users say into what code should do",
-            "Picking up new tools and libraries on your own",
-        ],
-    },
-    "3512": {
-        "machines_handle": [
-            "Password resets and access requests",
-            "First-line ticket triage and FAQs",
-            "Basic software installations from a script",
-        ],
-        "still_needs_you": [
-            "Hands-on hardware troubleshooting",
-            "Onsite user training and walkthroughs",
-            "Multi-language user support",
-        ],
-    },
-    "3514": {
-        "machines_handle": [
-            "Routine site monitoring and uptime alerts",
-            "Standard security patching",
-        ],
-        "still_needs_you": [
-            "Diagnosing strange site failures",
-            "Working with content teams on publishing workflows",
-            "Customising configurations for the business",
-        ],
-    },
-    "4110": {
-        "machines_handle": [
-            "Data entry and form processing",
-            "Filing and document scanning",
-            "Routine appointment scheduling",
-        ],
-        "still_needs_you": [
-            "Handling unusual customer requests",
-            "Managing relationships across teams",
-            "Spotting errors that the system misses",
-        ],
-    },
-    "5223": {
-        "machines_handle": [
-            "Cashier-style checkout",
-            "Inventory counting and stock alerts",
-            "Promotional pop-ups and price tags",
-        ],
-        "still_needs_you": [
-            "Persuasive selling and matching products to needs",
-            "Building relationships with regular customers",
-            "In-store troubleshooting and product demos",
-        ],
-    },
-    "5311": {
-        "machines_handle": [
-            "Basic activity scheduling apps",
-            "Simple safety reminders and timers",
-        ],
-        "still_needs_you": [
-            "Calming and engaging children directly",
-            "Reading what each child needs in the moment",
-            "Talking with parents about their child's day",
-        ],
-    },
-    "6111": {
-        "machines_handle": [
-            "Routine soil-moisture sensing and irrigation timing",
-            "Crop yield estimates from basic image data",
-        ],
-        "still_needs_you": [
-            "Reading weather and acting fast",
-            "Spotting early signs of pests or disease",
-            "Managing labour during harvest",
-        ],
-    },
-    "7115": {
-        "machines_handle": [
-            "Pre-cut, pre-drilled component panels",
-            "Routine measurement and marking",
-        ],
-        "still_needs_you": [
-            "Fitting work to imperfect walls and floors",
-            "Making custom pieces for unusual spaces",
-            "Reading what the customer actually wants",
-        ],
-    },
-    "7411": {
-        "machines_handle": [
-            "Routine wiring inspections with handheld testers",
-            "Standard fixture installations from kits",
-        ],
-        "still_needs_you": [
-            "Solar PV installation",
-            "On-site fault diagnosis when something is wired wrong",
-            "Code-compliance work and customer trust",
-        ],
-    },
-    "7412": {
-        "machines_handle": [
-            "Standard motor-assembly steps in factories",
-            "Routine equipment testing",
-        ],
-        "still_needs_you": [
-            "Diagnosing why a machine keeps failing",
-            "Repairing older or non-standard equipment",
-            "Training new staff on the floor",
-        ],
-    },
-    "7421": {
-        "machines_handle": [
-            "Routine diagnostic checks via scanners",
-            "Standard screen replacements",
-            "Basic battery swaps",
-        ],
-        "still_needs_you": [
-            "Complex circuit-level repair",
-            "Talking to customers and explaining what's wrong",
-            "Teaching apprentices how to fix things",
-        ],
-    },
-    "9211": {
-        "machines_handle": [
-            "Mechanical sowing and harvesting on flat fields",
-            "Basic spraying with drone equipment",
-        ],
-        "still_needs_you": [
-            "Hand-picking delicate crops",
-            "Working terrain machines can't reach",
-            "Sorting and grading produce by feel",
-        ],
-    },
-    "9520": {
-        "machines_handle": [
-            "Online price comparison apps",
-            "Some online ordering replacing impulse street buys",
-        ],
-        "still_needs_you": [
-            "Reading what catches a customer's eye",
-            "Negotiating prices on the spot",
-            "Building a regular customer base in your patch",
-        ],
-    },
-}
-
-
-def _verdict_bucket(score: float) -> str:
-    """Map calibrated score to one of three verdict tags used in the chat UI."""
-    if score < 0.33:
-        return "mostly_safe"
-    if score < 0.66:
-        return "watch"
-    return "act_now"
+# NOTE: _verdict_bucket() is imported from api.platform_config at the top.
+# Thresholds live in data/platform_config.json (verdict_thresholds.{mostly_safe_max, watch_max}).
 
 
 def _verdict_label(bucket: str) -> str:
@@ -440,7 +294,7 @@ def _maybe_translate(result: dict[str, Any], language: str) -> dict[str, Any]:
     `_translation_failed: true` added.
     """
     code = (language or "en").lower()
-    if code == "en" or code not in _LANGUAGE_NAMES:
+    if code == "en" or not is_supported_language(code):
         return result
 
     target_name = _language_name(code)
