@@ -39,6 +39,10 @@ export const STRINGS = {
     countryLabel: 'Country',
     languageLabel: 'Language',
     confirmLanguageSwitch: 'Switching language will reset the chat. Continue?',
+    automationOutlook: 'Automation outlook',
+    machinesGettingBetter: "What machines are getting better at",
+    stillNeedsYou: "What still needs you",
+    worthPickingUp: 'Worth picking up',
   },
 
   hi: {
@@ -67,6 +71,10 @@ export const STRINGS = {
     countryLabel: 'देश',
     languageLabel: 'भाषा',
     confirmLanguageSwitch: 'भाषा बदलने पर चैट रीसेट हो जाएगी। क्या जारी रखना है?',
+    automationOutlook: 'ऑटोमेशन का असर',
+    machinesGettingBetter: 'मशीनें किसमें बेहतर हो रही हैं',
+    stillNeedsYou: 'किसमें अभी भी आपकी ज़रूरत है',
+    worthPickingUp: 'सीखने लायक',
   },
 
   es: {
@@ -95,6 +103,10 @@ export const STRINGS = {
     countryLabel: 'País',
     languageLabel: 'Idioma',
     confirmLanguageSwitch: 'Cambiar el idioma reiniciará el chat. ¿Continuar?',
+    automationOutlook: 'Perspectiva de automatización',
+    machinesGettingBetter: 'En qué están mejorando las máquinas',
+    stillNeedsYou: 'Qué todavía te necesita',
+    worthPickingUp: 'Vale la pena aprender',
   },
 
   ar: {
@@ -124,6 +136,10 @@ export const STRINGS = {
     countryLabel: 'البلد',
     languageLabel: 'اللغة',
     confirmLanguageSwitch: 'سيؤدي تغيير اللغة إلى إعادة ضبط المحادثة. هل تريد المتابعة؟',
+    automationOutlook: 'توقعات الأتمتة',
+    machinesGettingBetter: 'ما الذي تتحسن فيه الآلات',
+    stillNeedsYou: 'ما يزال يحتاج إليك',
+    worthPickingUp: 'يستحق التعلم',
   },
 
   fr: {
@@ -152,6 +168,10 @@ export const STRINGS = {
     countryLabel: 'Pays',
     languageLabel: 'Langue',
     confirmLanguageSwitch: 'Changer de langue réinitialisera le chat. Continuer ?',
+    automationOutlook: "Perspectives d'automatisation",
+    machinesGettingBetter: 'Ce que les machines font mieux',
+    stillNeedsYou: 'Ce qui a encore besoin de vous',
+    worthPickingUp: 'À apprendre',
   },
 }
 

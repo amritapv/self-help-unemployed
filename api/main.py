@@ -62,6 +62,7 @@ class SkillsAssessmentRequest(BaseModel):
     skills_self_reported: str
     additional_info: str
     country_code: str = "GH"  # Default to Ghana
+    region: Optional[str] = None
     language: str = "en"
 
 
@@ -352,39 +353,48 @@ async def assess_skills_endpoint(request: SkillsAssessmentRequest):
         language=request.language,
     )
 
-    # Compute automation risk inline (deterministic, no Claude call) so we can
-    # persist a complete record and return it to the frontend.
-    automation_risk = {}
+    # Module 02: compute automation risk inline so the chat sees it on the
+    # same response as the profile (no separate /risk roundtrip). Persist a
+    # complete record so the policymaker /report can aggregate over it.
+    automation_risk = None
+    sector_hint = None
     if countries_config:
         try:
             frey_osborne = load_frey_osborne()
-            automation_risk = assess_automation_risk(result, country_config, frey_osborne)
+            automation_risk = assess_automation_risk(
+                skills_profile=result,
+                country_config=country_config,
+                frey_osborne=frey_osborne,
+                region=request.region,
+                language=request.language,
+            )
         except Exception as exc:
-            print(f"[assess-skills] risk_engine failed: {exc}")
+            import sys
+            print(f"[risk_engine] failed: {exc}", file=sys.stderr)
 
-    # Sector hint from primary matched occupation, if available
-    sector_hint = None
-    occupations = result.get("matched_occupations") or []
-    if occupations and countries_config:
-        primary_isco = str(occupations[0].get("isco_code", "")).strip()
-        wage_entry = (country_config.get("wage_data") or {}).get(primary_isco) or {}
-        sector_hint = wage_entry.get("sector")
+        occupations = result.get("matched_occupations") or []
+        if occupations:
+            primary_isco = str(occupations[0].get("isco_code", "")).strip()
+            wage_entry = (country_config.get("wage_data") or {}).get(primary_isco) or {}
+            sector_hint = wage_entry.get("sector")
+
+    result["automation_risk"] = automation_risk
 
     profile_id = None
     try:
         profile_id = repository.insert_profile(
             skills_profile=result,
-            automation_risk=automation_risk,
+            automation_risk=automation_risk or {},
             opportunities=[],
             country_code=request.country_code,
+            region=request.region,
             sector_hint=sector_hint,
             source="live",
         )
     except Exception as exc:
-        # Persistence failure shouldn't break the user-facing response
         print(f"[assess-skills] persistence failed: {exc}")
 
-    return {**result, "profile_id": profile_id, "automation_risk": automation_risk}
+    return {**result, "profile_id": profile_id}
 
 
 @app.post("/match-opportunities")
