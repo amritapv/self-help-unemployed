@@ -21,25 +21,6 @@ function ProfileCard({ profile }) {
         <p className="text-gray-700 leading-relaxed">{profile.portable_summary}</p>
       </section>
 
-      {/* Matched occupations */}
-      {profile.matched_occupations?.length > 0 && (
-        <section className="bg-white rounded-lg shadow p-5">
-          <h3 className="font-semibold mb-3">Matched roles</h3>
-          <ul className="space-y-1">
-            {profile.matched_occupations.map((occ, i) => (
-              <li key={i} className="flex items-start justify-between text-sm">
-                <span className="text-gray-800">{occ.title}</span>
-                {occ.confidence && (
-                  <span className="text-xs uppercase tracking-wide text-gray-500 ms-3">
-                    {String(occ.confidence)}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       {/* Skills */}
       {profile.skills?.length > 0 && (
         <section className="bg-white rounded-lg shadow p-5">

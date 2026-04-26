@@ -89,7 +89,7 @@ function ChatView({ country, language, onProfileComplete, onNavigate }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language])
 
-  // Shared assessment chain: /assess-skills -> /match-opportunities -> render top 5.
+  // Shared assessment chain: /assess-skills -> /match-opportunities -> render top 3.
   const runAssessment = async ({ collected, country_code }) => {
     setLoading(true)
     setMessages(prev => [

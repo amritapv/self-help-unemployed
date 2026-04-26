@@ -5,7 +5,7 @@ function OpportunityList({ opportunities }) {
   if (!opportunities?.length) {
     return (
       <div className="bg-white rounded-lg shadow p-5 text-sm text-gray-600">
-        No opportunities yet — the matcher couldn't surface a top 5 from this profile.
+        No opportunities yet — the matcher couldn't surface a top 3 from this profile.
       </div>
     )
   }
